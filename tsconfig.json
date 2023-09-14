@@ -29,7 +29,7 @@
     "src/**/*.ts",
     "src/**/*.d.ts",
     "src/**/*.tsx",
-    "src/**/*.vue",
+    "src/**/*.vue", "src/utils/route", "src/utils/route",
   ],
   "references": [
     {

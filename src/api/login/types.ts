@@ -1,7 +1,11 @@
 export interface ILoginParams {
-    userName: string
-    passWord: string | number
+    username: string
+    password: string | number
 }
 export interface ILoginApi {
-    login: (params: ILoginParams)=> Promise<any>
+    login: (params: ILoginParams) => Promise<any>
+}
+
+export interface IRoutepi {
+    fetchRoute: (params: any) => Promise<any>
 }

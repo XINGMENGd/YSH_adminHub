@@ -1,12 +1,10 @@
 <template>
-  <div>
-    menu1
-  </div>
+  <router-view></router-view>
 </template>
 
-<script setup lang='ts'>
+<script lang="ts" setup>
 import { reactive, toRefs, onBeforeMount, onMounted } from 'vue'
 
 </script>
 
-<style scoped lang='less'></style>
+<style lang='less' scoped></style>
