@@ -24,39 +24,7 @@ const useStore = useLoginStore();
 const { token } = storeToRefs(useStore);
 const cli = () => {
   http.get('/mysql').then((res: any) => {
-    const arr = mapRoute(res)
-    console.log(arr);
   })
-}
-const mapRoute = (route: any, childr: any = "") => {
-  const child = {
-    "id": 3,
-    "name": "menu1-1",
-    "roles": "00",
-    "children_id": null
-  }
-  const a = route.map((item: any, index: any) => {
-    if (item.children) {
-
-      const arr = item.children.map((it1: any, in1: any) => {
-        if (child.id == it1.id && it1.name != "") {
-          it1 = child
-        } else {
-          // return mapRoute(route, item)
-        }
-        return it1
-      })
-      // console.log(arr,'arr') ;
-      
-      return arr
-    }
-    console.log(item,'item');
-
-    return item
-  })
-  console.log(a);
-
-  return route
 }
 
 

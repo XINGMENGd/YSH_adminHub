@@ -6,32 +6,28 @@ import Layout from '@/Layout/index.vue'
 
 const routes: RouteRecordRaw[] = [
   {
-    path: '/login',
     name: 'login',
-    component: () => import('@/views/login/index.vue'), //一定要有.vue后缀    
+    path: '/login',
+    component: () => import('@/views/login/index.vue'), // 一定要有.vue后缀    
     meta: { title: '登录页', hidden: false }
   },
   {
+    name: "首页",
     path: '/',
-    component: Layout, //一定要有.vue后缀
+    component: Layout, // 一定要有.vue后缀
     redirect: '/home',
-    meta: { title: 'home', hidden: false, hasChildren: true },
+    meta: { title: 'home', hidden: false },
     children: [{
       path: 'home',
       name: 'home',
       component: () => import('@/views/home/index.vue'),
-      meta: { title: 'home', hidden: false, hasChildren: false }
+      meta: { title: 'home', hidden: false }
     }]
   },
   {
-    path: '/NotFound',
     name: 'NotFound',
-    component: () => import('@/views/NotFound/index.vue'), //一定要有.vue后缀    
-    meta: { hidden: true }
-  },
-  {
-    path: '/:pathMatch(.*)',
-    redirect: '/NotFound',
+    path: '/NotFound',
+    component: () => import('@/views/NotFound/index.vue'), // 一定要有.vue后缀    
     meta: { hidden: true }
   },
 ]

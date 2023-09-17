@@ -53,11 +53,6 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/nodeMock/, '')   // axios 实例的 baseURL属性，与上面的mock对应
       },
-      // '/gapi': {
-      //   target: 'https://blog.junfeng530.xyz/',  //我的博客地址
-      //   changeOrigin: true,
-      //   rewrite: (path) => path.replace(/^\/gapi/, '')
-      // },
     },
     open: true,  // 是否在浏览器打开
     https: false,

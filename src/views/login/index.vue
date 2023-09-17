@@ -1,6 +1,6 @@
 <template>
-  <div class="fromBox">
-    <el-form :rules="rules" label-width="120px">
+  <div class="FormBox">
+    <el-form :rules="rules" :model="Form" label-width="120px">
       <el-form-item label="username" prop="username">
         <el-input v-model="Form.username" />
       </el-form-item>
@@ -17,14 +17,12 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive, toRefs, onBeforeMount, onMounted } from 'vue'
+import { reactive } from 'vue'
 import { useLoginStore } from '@/store/login'
-import { storeToRefs } from 'pinia'
 import { useRouter, useRoute } from 'vue-router'
 import login from '@/api/login/login'
 
 const useStore = useLoginStore();
-const { token } = storeToRefs(useStore);
 const router = useRouter()
 
 const Form = reactive({
@@ -47,30 +45,24 @@ const toLogin = async () => {
   login.login({
     username: Form.username,
     password: Form.password
-  }).then(res => {
-    if (res.code === 200) {
+  })
+    .then(res => {
+      if (res.code !== 200) return ElMessage.error(res.message)
+
       ElMessage({
         message: '登录成功，即将跳转',
         type: 'success',
         duration: 1000
       })
-      useStore.SetToken(res.data.token)
-      useStore.SetUser(res.data.username, res.data.jurisdiction)
-      setTimeout(() => {
-        router.push({
-          path: '/'
-        })
-      }, 1000);
-    } else {
-      ElMessage.error(res.message)
-    }
-  })
+      useStore.SetUserStatus(res.data)
+      setTimeout(() => router.push('/'), 1000);
+    })
 }
 
 </script>
 
 <style lang='less' scoped>
-.fromBox {
+.FormBox {
   width: 80%;
   margin: 0 auto;
 }

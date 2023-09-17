@@ -1,10 +1,10 @@
 <template>
   <el-sub-menu v-for="(item, index) in routeMenu" :index="item.path">
     <template #title>
-      <img src="@/assets/icon.png" alt="">
+      <!-- <img src="@/assets/icon.png" alt=""> -->
       <span>{{ item.meta.title }}</span>
     </template>
-    <el-menu-item v-if="!item.meta.hasChildren" :index="item.path">
+    <el-menu-item v-if="!item.children" :index="item.path" @click="skipRouter(item)">
       {{ item.meta.title }}
     </el-menu-item>
     <subMenu v-else :routeMenu="item.children" />
@@ -18,9 +18,61 @@ export default {
 </script>
 <script lang='ts' setup>
 import { ref, reactive, toRefs, onBeforeMount, onMounted } from 'vue'
-const props = defineProps<{ routeMenu: any }>()
-// console.log(props.routeMenu);
+import router from '@/router/index'
+
+const { routeMenu } = defineProps<{ routeMenu: any }>()
+
+const skipRouter = (item: any) => {
+  const reg = /\/src\/views\/(.+)\/index\.vue/
+  const toPath = '/' + item.component.toString().match(reg)[1]
+  router.push(toPath)
+}
 
 </script>
 
 <style lang='less' scoped></style>
+
+
+<!-- <template>
+  <template v-for="item in routeMenu">
+    <template v-if="item.children && item.children.length > 1">
+      <el-sub-menu :key="item.path" :index="item.path">
+        <template v-slot:title>
+          <span>{{ item.meta.title }}</span>
+        </template>
+        <subMenu :routeMenu="item.children" />
+      </el-sub-menu>
+    </template>
+    <template v-else>
+      <el-menu-item :key="item.path" :index="item.path" @click="skipRouter(item)">
+        <span>{{ item.meta.title }}</span>
+      </el-menu-item>
+    </template>
+  </template>
+</template>
+
+<script lang="ts">
+export default {
+  name: "subMenu"
+}
+</script>
+<script lang='ts' setup>
+import { ref, reactive, toRefs, onBeforeMount, onMounted } from 'vue'
+import router from '@/router/index'
+
+const { routeMenu } = defineProps<{ routeMenu: any }>()
+
+const skipRouter = (item: any) => {
+  const reg = /\/src\/views\/(.+)\/index\.vue/
+  const toPath = '/' + item.component.toString().match(reg)[1]
+  router.push(toPath)
+}
+
+const cli = () => {
+  console.log(123);
+
+}
+
+</script>
+
+<style lang='less' scoped></style> -->

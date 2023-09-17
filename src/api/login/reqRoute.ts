@@ -1,10 +1,10 @@
 import http from '@/api/http'
 import * as T from './types'
 
-const reqRoute: T.IRoutepi = {
-  fetchRoute(params) {
-    return http.post('/RouteList', params)
+const FetchRoute: T.IRouteApi = {
+  FetchRouteList() {
+    return http.post('/FetchRouteList')
   }
 
 }
-export default reqRoute
+export default FetchRoute

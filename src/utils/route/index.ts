@@ -1,4 +1,6 @@
 import router from '@/router/index';//绝对不要加.ts后缀
+import Layout from '@/Layout/index.vue'
+import { useLoginStore } from '@/store/login';
 
 function getModules() {
   // vite无法像webpack一样在import引入中使用模板字符串，改用这个引入全部页面，在去根据后端返回路由名匹配进行路由组件懒加载
@@ -12,69 +14,26 @@ Object.keys(modules).forEach((item: any) => {
   arr.push(item.match(reg)[1])
 })
 
-function matchRoute(route: any) {
-  route.forEach((item: any) => {
-    if (item.children) {
-      item.meta.hasChildren = true
-      return matchRoute(item.children)
+export const setRoute = (routeList: any) => {
+  const useStore = useLoginStore();
+  useStore.SET_ROUTERS(routeList)
+  routeList = assistSetRoute(routeList)
+  routeList.forEach((item: any) => {
+    router.addRoute(item)
+  })
+  
+}
+const assistSetRoute = (routeList: any) => {
+  routeList.forEach((item: any) => {
+    // item.children ? item.component == 'Layout' ? item.component = Layout : assistSetRoute(item.children) : 0
+    if (item.component == 'Layout') {
+      item.component = Layout
+      if (item.children) {
+        assistSetRoute(item.children)
+      }
     } else {
-      item.meta.hasChildren = false
-      arr.forEach(index => {
-        if (index.includes(item.name)) {
-          item.component = modules[`/src/views/${index}/index.vue`]
-        }
-      })
-      return item
+      item.component ? item.component = modules[`/src/views/${item.component}/index.vue`] : assistSetRoute(item.children)
     }
   })
-  return route
+  return routeList
 }
-
-// export const filterSingleChild = (routeMenu: any) => {
-//   console.log(routeMenu,'routeMenu');
-  
-//   routeMenu = routeMenu.map((item: any) => {
-//     if (item.children?.length == 1) {
-//       item.path = item.children[0].path == 'home' ? '/home' : `${item.path}/${item.children[0].path}`
-//       item.meta.title = item.children[0].name
-//       // item.meta.hasChildren = false
-//       delete item.children
-//     } else {
-//       function match(fatherPath: any, children: any) {
-//         let Path = fatherPath
-//         children.map((index: any) => {
-//           if (index.children) {
-//             return match(`${Path}/${index.path}`, index.children)
-//           } else {
-//             index.path = `${Path}/${index.name}`
-//             return index
-//           }
-//         })
-//       }
-//       match(item.path, item.children)
-//     }
-//     return item
-//   })
-// }
-
-
-
-// export const processRoute = (routeList: any) => {
-//   matchRoute(Object.values(routeList))
-//   routeList.forEach((item: any) => {
-//     item.component = () => import('@/Layout/index.vue')
-//   })
-//   return routeList
-// }
-
-// // 匹配路由信息地址
-// export const addRoute = async (routeList: any) => {
-//   const arr1 = Object.values(routeList)
-//   const arr2 = router.getRoutes()
-//   const newArr = uniqueArray(arr1, arr2, 'path')
-//   matchRoute(Object.values(newArr))
-//   newArr.forEach((index: any) => {
-//     index.component = () => import('@/Layout/index.vue')
-//   })
-//   return newArr.forEach((index: any) => router.addRoute(index))
-// }

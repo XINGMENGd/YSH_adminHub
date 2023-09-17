@@ -8,7 +8,7 @@ axios.defaults.timeout = 10000
 axios.defaults.headers.post['Content-Type'] = 'application/json;charset=UTF-8'
 axios.interceptors.request.use(
   (config): AxiosRequestConfig<any> => {
-    const token = JSON.parse(window.localStorage.getItem('loginState'))?.token
+    const token = JSON.parse(window.sessionStorage.getItem('loginState'))?.token
     if (token) {
       //@ts-ignore
       config.headers.Authorization = token

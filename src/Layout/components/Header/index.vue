@@ -8,7 +8,7 @@
     </div>
     <div class="actionBar" @mouseenter="overAction" @mouseleave="outAction">
       <div class="userName">
-        <span>{{ userName }}</span>
+        <span>{{ username }}</span>
       </div>
       <div class="avatar">
         <el-avatar :icon="UserFilled" :size="40" />
@@ -30,7 +30,8 @@ import { UserFilled } from '@element-plus/icons-vue'
 const props = defineProps<{ isCollapse: boolean }>()
 
 const useStore = useLoginStore();
-const { userName } = storeToRefs(useStore);
+const { username } = storeToRefs(useStore);
+
 const emit = defineEmits(['updateIsCollapse', 'submit'])  // 变量名要与父组件声明的一致，注意，并非是传递给子组件调用的方法名
 const updateIsCollapse = function () {
   emit('submit')

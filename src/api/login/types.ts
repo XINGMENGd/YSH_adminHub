@@ -6,6 +6,6 @@ export interface ILoginApi {
     login: (params: ILoginParams) => Promise<any>
 }
 
-export interface IRoutepi {
-    fetchRoute: (params: any) => Promise<any>
+export interface IRouteApi {
+    FetchRouteList: () => Promise<any>
 }
