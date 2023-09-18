@@ -29,7 +29,7 @@ const routes: RouteRecordRaw[] = [
     path: '/NotFound',
     component: () => import('@/views/NotFound/index.vue'), // 一定要有.vue后缀    
     meta: { hidden: true }
-  },
+  }
 ]
 let router = createRouter({
   history: createWebHashHistory(),

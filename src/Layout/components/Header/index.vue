@@ -24,18 +24,17 @@
 import { ref, reactive, toRefs, onBeforeMount, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { storeToRefs } from 'pinia';
-import { useLoginStore } from '@/store/login';
+import LoginStore from '@/stores/login';
 import { UserFilled } from '@element-plus/icons-vue'
 
 const props = defineProps<{ isCollapse: boolean }>()
 
-const useStore = useLoginStore();
-const { username } = storeToRefs(useStore);
+const useStore = LoginStore();
+const { username } = useStore.GET_USERINFO
 
-const emit = defineEmits(['updateIsCollapse', 'submit'])  // 变量名要与父组件声明的一致，注意，并非是传递给子组件调用的方法名
-const updateIsCollapse = function () {
-  emit('submit')
-}
+const emit = defineEmits(['UPDATE_IsCollapse', 'submit'])  // 变量名要与父组件声明的一致，注意，并非是传递给子组件调用的方法名
+const updateIsCollapse = () => emit('submit')
+
 
 const ifShow = ref(false)
 const overAction = () => {

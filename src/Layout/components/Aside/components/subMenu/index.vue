@@ -1,7 +1,9 @@
-<template>
+<!-- <template>
   <el-sub-menu v-for="(item, index) in routeMenu" :index="item.path">
     <template #title>
-      <!-- <img src="@/assets/icon.png" alt=""> -->
+      <el-icon size="20">
+        <component :is="item.meta.icon"></component>
+      </el-icon>
       <span>{{ item.meta.title }}</span>
     </template>
     <el-menu-item v-if="!item.children" :index="item.path" @click="skipRouter(item)">
@@ -30,14 +32,17 @@ const skipRouter = (item: any) => {
 
 </script>
 
-<style lang='less' scoped></style>
+<style lang='less' scoped></style> -->
 
 
-<!-- <template>
+<template>
   <template v-for="item in routeMenu">
-    <template v-if="item.children && item.children.length > 1">
+    <template v-if="item.children && item.children.length > 0">
       <el-sub-menu :key="item.path" :index="item.path">
         <template v-slot:title>
+          <el-icon size="16">
+            <component :is="item.meta.icon"></component>
+          </el-icon>
           <span>{{ item.meta.title }}</span>
         </template>
         <subMenu :routeMenu="item.children" />
@@ -45,6 +50,9 @@ const skipRouter = (item: any) => {
     </template>
     <template v-else>
       <el-menu-item :key="item.path" :index="item.path" @click="skipRouter(item)">
+        <el-icon size="16">
+          <component :is="item.meta.icon"></component>
+        </el-icon>
         <span>{{ item.meta.title }}</span>
       </el-menu-item>
     </template>
@@ -64,15 +72,10 @@ const { routeMenu } = defineProps<{ routeMenu: any }>()
 
 const skipRouter = (item: any) => {
   const reg = /\/src\/views\/(.+)\/index\.vue/
-  const toPath = '/' + item.component.toString().match(reg)[1]
+  const toPath = '/' + item.component?.toString().match(reg)[1]
   router.push(toPath)
-}
-
-const cli = () => {
-  console.log(123);
-
 }
 
 </script>
 
-<style lang='less' scoped></style> -->
+<style lang='less' scoped></style>

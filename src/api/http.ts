@@ -1,6 +1,7 @@
 //http.ts
 import axios, { AxiosRequestConfig } from 'axios'
 import NProgress from 'nprogress'
+import LoginStore from '@/stores/login';
 
 // 设置请求头和请求路径
 axios.defaults.baseURL = '/nodeMock'
@@ -8,7 +9,11 @@ axios.defaults.timeout = 10000
 axios.defaults.headers.post['Content-Type'] = 'application/json;charset=UTF-8'
 axios.interceptors.request.use(
   (config): AxiosRequestConfig<any> => {
-    const token = JSON.parse(window.sessionStorage.getItem('loginState'))?.token
+    const useStore = LoginStore();
+    const { token } = useStore.GET_USERINFO
+    // const { token } = JSON.parse(window.sessionStorage.getItem('loginState'))?.userInfo
+    // console.log(token);
+
     if (token) {
       //@ts-ignore
       config.headers.Authorization = token
@@ -31,7 +36,7 @@ axios.interceptors.request.use(
 interface ResType<T> {
   code: number
   data?: T
-  msg: string
+  message?: string
   err?: string
 }
 interface Http {

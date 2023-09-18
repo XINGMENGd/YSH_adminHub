@@ -18,11 +18,12 @@
 
 <script lang="ts" setup>
 import { reactive } from 'vue'
-import { useLoginStore } from '@/store/login'
 import { useRouter, useRoute } from 'vue-router'
-import login from '@/api/login/login'
 
-const useStore = useLoginStore();
+import LoginStore from '@/stores/login'
+import { login } from '@/api/Authentication'
+
+const useStore = LoginStore();
 const router = useRouter()
 
 const Form = reactive({
@@ -42,7 +43,7 @@ const rules = reactive({
 })
 
 const toLogin = async () => {
-  login.login({
+  login({
     username: Form.username,
     password: Form.password
   })
@@ -54,7 +55,7 @@ const toLogin = async () => {
         type: 'success',
         duration: 1000
       })
-      useStore.SetUserStatus(res.data)
+      useStore.SET_USERINFO(res.data)
       setTimeout(() => router.push('/'), 1000);
     })
 }

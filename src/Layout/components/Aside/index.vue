@@ -7,16 +7,17 @@
 
 <script lang="ts" setup>
 import { ref, reactive, toRefs, onBeforeMount, onMounted } from 'vue'
-import { useLoginStore } from '@/store/login';
+
 import { storeToRefs } from 'pinia';
+import LoginStore from '@/stores/login';
 
 import subMenu from './components/subMenu/index.vue'
 
 // 声明个变量统一接受传值
 const props = defineProps<{ isCollapse: boolean }>()
 
-const useStore = useLoginStore();
-const routeMenu = useStore.GET_Routers
+const useStore = LoginStore();
+const routeMenu = useStore.GET_ROUTERS
 
 </script>
 
