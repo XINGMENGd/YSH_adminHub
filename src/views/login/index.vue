@@ -18,45 +18,47 @@
 
 <script lang="ts" setup>
 import { reactive } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
 
 import LoginStore from '@/stores/login'
 import { login } from '@/api/Authentication'
 
-const useStore = LoginStore();
+const useStore = LoginStore()
 const router = useRouter()
 
 const Form = reactive({
   username: 'admin',
-  password: '123456',
+  password: '123456'
 })
 
 const rules = reactive({
   username: [
     { required: true, message: 'Please input Username', trigger: 'blur' },
-    { min: 3, max: 15, message: 'Length should be 6 to 15', trigger: 'blur' },
+    { min: 3, max: 15, message: 'Length should be 6 to 15', trigger: 'blur' }
   ],
   password: [
     { required: true, message: 'Please input PassWord', trigger: 'blur' },
-    { min: 6, max: 15, message: 'Length should be 6 to 15', trigger: 'blur' },
-  ],
+    { min: 6, max: 15, message: 'Length should be 6 to 15', trigger: 'blur' }
+  ]
 })
 
-const toLogin = async () => {
+const toLogin = async (): Promise<void> => {
   login({
     username: Form.username,
     password: Form.password
   })
     .then(res => {
       if (res.code !== 200) return ElMessage.error(res.message)
-
       ElMessage({
         message: '登录成功，即将跳转',
         type: 'success',
         duration: 1000
       })
       useStore.SET_USERINFO(res.data)
-      setTimeout(() => router.push('/'), 1000);
+      setTimeout(() => router.push('/'), 1000)
+    })
+    .catch(error => {
+      console.error(error)
     })
 }
 

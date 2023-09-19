@@ -1,7 +1,10 @@
 import http from '@/api/http'
-import * as T from './types'
+import type * as T from './types'
 
-export const login = (params: T.LoginParams) => http.post('/login', params)
+export const login = (params: T.LoginParams): Promise<any> => {
+  return http.post('/login', params)
+}
 
-export const FetchRoute = () => http.post('/FetchRouteList')
-
+export const FetchRoute = (): Promise<any> => {
+  return http.post('/FetchRouteList')
+}
