@@ -11,20 +11,6 @@ export function resultSuccess<T = Recordable>(data: T, { message = 'success' } =
   }
 }
 
-// export function resultMenuSuccess<T = any>(
-//   path: string,
-//   name: string,
-//   component: string
-// ) {
-//   return {
-//     ...resultSuccess({
-//       path: path,
-//       name: name,
-//       component: component
-//     })
-//   }
-// }
-
 export function resultPageSuccess<T = any>(
   page: number,
   pageSize: number,

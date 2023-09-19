@@ -8,7 +8,7 @@
     </div>
     <div class="actionBar" @mouseenter="overAction" @mouseleave="outAction">
       <div class="userName">
-        <span>{{ userName }}</span>
+        <span>{{ username }}</span>
       </div>
       <div class="avatar">
         <el-avatar :icon="UserFilled" :size="40" />
@@ -21,42 +21,40 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive, toRefs, onBeforeMount, onMounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import { storeToRefs } from 'pinia';
-import { useLoginStore } from '@/store/login';
+import { ref } from 'vue'
+// import { useRouter, useRoute } from 'vue-router'
+// import { storeToRefs } from 'pinia';
+import LoginStore from '@/stores/login'
 import { UserFilled } from '@element-plus/icons-vue'
 
-const props = defineProps<{ isCollapse: boolean }>()
-
-const useStore = useLoginStore();
-const { userName } = storeToRefs(useStore);
-const emit = defineEmits(['updateIsCollapse', 'submit'])  // 变量名要与父组件声明的一致，注意，并非是传递给子组件调用的方法名
-const updateIsCollapse = function () {
+defineProps<{ isCollapse: boolean }>()
+const useStore = LoginStore()
+const { username } = useStore.GET_USERINFO
+const emit = defineEmits(['UPDATE_IsCollapse', 'submit']) // 变量名要与父组件声明的一致，注意，并非是传递给子组件调用的方法名
+const updateIsCollapse = (): void => {
   emit('submit')
 }
-
 const ifShow = ref(false)
-const overAction = () => {
+const overAction = (): void => {
   ifShow.value = true
 }
-const outAction = () => {
+const outAction = (): void => {
   ifShow.value = false
 }
-const logOut = () => {
+const logOut = (): void => {
   ElMessageBox.confirm(
     '是否退出当前账号?',
     '退出登录',
     {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
-      type: 'warning',
+      type: 'warning'
     }
   )
     .then(() => {
       ElMessage({
         type: 'success',
-        message: '退出成功',
+        message: '退出成功'
       })
       useStore.LOGOUT()
     })

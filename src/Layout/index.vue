@@ -17,17 +17,16 @@
 </template>
 
 <script lang="ts" setup>
-import { useRouter, useRoute } from 'vue-router'
+// import { useRouter, useRoute } from 'vue-router'
 import Aside from './components/Aside/index.vue'
 import Header from './components/Header/index.vue'
 import Main from './components/Main/index.vue'
 
-import { useLoginStore } from '@/store/login'
+import LoginStore from '@/stores/login'
 import { storeToRefs } from 'pinia'
 
-
-const useStore = useLoginStore();
-const router = useRouter()
+const useStore = LoginStore()
+// const router = useRouter()
 
 // 解构数据，但是得到的数据是不具有响应式的，只是一次性的
 // 相当于仅仅只是...mainStore而已，只是做了reactive处理，并没有做toRefs,不是一直响应的
@@ -37,9 +36,9 @@ const router = useRouter()
 // console.log(isCollapse);   // false
 // 解决方法：
 // 通过pinia中提供的storeToRefs方法来解决，推荐使用
-const { isCollapse } = storeToRefs(useStore);
-const updateIsCollapse = function () {
-  useStore.updateIsCollapse()
+const { isCollapse } = storeToRefs(useStore)
+const updateIsCollapse = (): void => {
+  useStore.UPDATE_IsCollapse()
 }
 
 // console.log(import.meta.env)
@@ -86,7 +85,6 @@ const updateIsCollapse = function () {
   /*border-radius: 10px;*/
   background: #EDEDED;
 }
-
 
 .el-header {
   border-bottom: 1px solid #ccc;

@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory, createWebHashHistory, RouteRecordRaw } from 'vue-router'
+import { createRouter, createWebHashHistory, type RouteRecordRaw } from 'vue-router'
 
 // createWebHistory  --history模式
 // createWebHashHistory  --hash模式
@@ -6,38 +6,34 @@ import Layout from '@/Layout/index.vue'
 
 const routes: RouteRecordRaw[] = [
   {
-    path: '/login',
     name: 'login',
-    component: () => import('@/views/login/index.vue'), //一定要有.vue后缀    
+    path: '/login',
+    component: () => import('@/views/login/index.vue'),
     meta: { title: '登录页', hidden: false }
   },
   {
+    name: '首页',
     path: '/',
-    component: Layout, //一定要有.vue后缀
+    component: Layout,
     redirect: '/home',
-    meta: { title: 'home', hidden: false, hasChildren: true },
+    meta: { title: 'home', hidden: false },
     children: [{
       path: 'home',
       name: 'home',
       component: () => import('@/views/home/index.vue'),
-      meta: { title: 'home', hidden: false, hasChildren: false }
+      meta: { title: 'home', hidden: false }
     }]
   },
   {
-    path: '/NotFound',
     name: 'NotFound',
-    component: () => import('@/views/NotFound/index.vue'), //一定要有.vue后缀    
+    path: '/NotFound',
+    component: () => import('@/views/NotFound/index.vue'),
     meta: { hidden: true }
-  },
-  {
-    path: '/:pathMatch(.*)',
-    redirect: '/NotFound',
-    meta: { hidden: true }
-  },
+  }
 ]
-let router = createRouter({
+const router = createRouter({
   history: createWebHashHistory(),
-  routes,
+  routes
 })
 
 export default router

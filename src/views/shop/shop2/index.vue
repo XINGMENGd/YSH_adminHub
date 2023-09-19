@@ -1,10 +1,10 @@
 <template>
   <div>
-    menu2
+    shop2
   </div>
 </template>
 
-<script lang="ts" setup>
+<script lang='ts' setup>
 
 </script>
 

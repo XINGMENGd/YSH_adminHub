@@ -1,6 +1,6 @@
 <template>
-  <div class="fromBox">
-    <el-form :rules="rules" label-width="120px">
+  <div class="FormBox">
+    <el-form :rules="rules" :model="Form" label-width="120px">
       <el-form-item label="username" prop="username">
         <el-input v-model="Form.username" />
       </el-form-item>
@@ -17,60 +17,55 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive, toRefs, onBeforeMount, onMounted } from 'vue'
-import { useLoginStore } from '@/store/login'
-import { storeToRefs } from 'pinia'
-import { useRouter, useRoute } from 'vue-router'
-import login from '@/api/login/login'
+import { reactive } from 'vue'
+import { useRouter } from 'vue-router'
 
-const useStore = useLoginStore();
-const { token } = storeToRefs(useStore);
+import LoginStore from '@/stores/login'
+import { login } from '@/api/Authentication'
+
+const useStore = LoginStore()
 const router = useRouter()
 
 const Form = reactive({
   username: 'admin',
-  password: '123456',
+  password: '123456'
 })
 
 const rules = reactive({
   username: [
     { required: true, message: 'Please input Username', trigger: 'blur' },
-    { min: 3, max: 15, message: 'Length should be 6 to 15', trigger: 'blur' },
+    { min: 3, max: 15, message: 'Length should be 6 to 15', trigger: 'blur' }
   ],
   password: [
     { required: true, message: 'Please input PassWord', trigger: 'blur' },
-    { min: 6, max: 15, message: 'Length should be 6 to 15', trigger: 'blur' },
-  ],
+    { min: 6, max: 15, message: 'Length should be 6 to 15', trigger: 'blur' }
+  ]
 })
 
-const toLogin = async () => {
-  login.login({
+const toLogin = async (): Promise<void> => {
+  login({
     username: Form.username,
     password: Form.password
-  }).then(res => {
-    if (res.code === 200) {
+  })
+    .then(res => {
+      if (res.code !== 200) return ElMessage.error(res.message)
       ElMessage({
         message: '登录成功，即将跳转',
         type: 'success',
         duration: 1000
       })
-      useStore.SetToken(res.data.token)
-      useStore.SetUser(res.data.username, res.data.jurisdiction)
-      setTimeout(() => {
-        router.push({
-          path: '/'
-        })
-      }, 1000);
-    } else {
-      ElMessage.error(res.message)
-    }
-  })
+      useStore.SET_USERINFO(res.data)
+      setTimeout(() => router.push('/'), 1000)
+    })
+    .catch(error => {
+      console.error(error)
+    })
 }
 
 </script>
 
 <style lang='less' scoped>
-.fromBox {
+.FormBox {
   width: 80%;
   margin: 0 auto;
 }
