@@ -25,7 +25,6 @@ module.exports = {
         "parser": '@typescript-eslint/parser',
         "ecmaVersion": "latest",
         "sourceType": "module",
-        "project": ["./tsconfig.json"],
         "extraFileExtensions": [".vue"]
     },
     "plugins": [
@@ -47,6 +46,6 @@ module.exports = {
             checkMethodDeclarations: false,
         }],
         '@typescript-eslint/no-misused-promises': 'off',
-        'vue/multi-word-component-names': 'off',
+        'vue/multi-word-component-names': 'off', // 不再强制要求组件名
     }
 }

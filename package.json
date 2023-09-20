@@ -9,7 +9,7 @@
     "prod": "vite --mode production",
     "build": "vue-tsc && vite build",
     "preview": "vite preview",
-    "lint":"eslint --cache --ext .js,.vue --ignore-path .eslintrc.cjs --fix src"
+    "lint": "eslint --cache --ext .js,.vue --ignore-path .eslintrc.cjs --fix src"
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.1.0",
@@ -34,7 +34,7 @@
     "@types/node": "^18.13.0",
     "@typescript-eslint/eslint-plugin": "^6.7.2",
     "@typescript-eslint/parser": "^6.7.0",
-    "@vitejs/plugin-vue": "^4.0.0",
+    "@vitejs/plugin-vue": "^4.3.4",
     "cross-env": "^7.0.3",
     "eslint": "^8.49.0",
     "eslint-config-standard-with-typescript": "^39.0.0",

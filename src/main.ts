@@ -27,8 +27,8 @@ router.beforeEach(async (to, from, next) => {
       next()
     } else {
       // 将路由添加到 store 中，用来标记已添加动态路由
-      const res = await FetchRoute()
-      setRoute(res)
+      const { data } = await FetchRoute()
+      setRoute(data)
       // 如果 addRoutes 并未完成，路由守卫会一层一层的执行执行，直到 addRoutes 完成，找到对应的路由
       next({ ...to, replace: true })
     }

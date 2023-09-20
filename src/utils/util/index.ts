@@ -5,6 +5,6 @@
  * @param value 去重的属性值
  * @returns 
  */
-export function uniqueArray(arr1: any[], arr2: any[],value:any) {
+export const uniqueArray = (arr1: any[], arr2: any[], value: any) => {
   return arr1.filter((item) => !arr2.some((ele) => ele[value] === item[value]));
 }
