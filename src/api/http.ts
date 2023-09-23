@@ -1,6 +1,8 @@
 import axios from 'axios'
 import NProgress from 'nprogress'
 import LoginStore from '@/stores/login'
+import { resolve } from 'path'
+import { rejects } from 'assert'
 
 // 设置请求头和请求路径
 axios.defaults.baseURL = import.meta.env.VITE_BASE_API_URL
@@ -19,14 +21,28 @@ axios.interceptors.request.use(
     return error
   }
 )
-// // 响应拦截
-// axios.interceptors.response.use((res) => {
-//   if (res.data.code === 111) {
-//     localStorage.setItem('token', '')
-//     // token过期操作
-//   }
-//   return res
-// })
+
+// 响应拦截
+axios.interceptors.response.use((res: any) => {
+  return new Promise((resolve, reject) => {
+    if (res.data.code === 200) {
+
+      res.data.message !== '获取成功' ? ElMessage({
+        message: res.data.message,
+        type: 'success',
+        duration: 1000
+      }) : ''
+      return resolve(res)
+    } else {
+      ElMessage.error(res.data.message)
+      return reject(res)
+    }
+    // if (res.data.code === 111) {
+    //   localStorage.setItem('token', '')
+    //   // token过期操作
+    // }
+  })
+})
 
 interface ResType<T> {
   code: number
@@ -50,7 +66,7 @@ const http: Http = {
       return res.data
     } catch (err: any) {
       NProgress.done()
-      throw err.response?.data
+      throw err.response?.data || err?.data
     }
   },
   post: async (url: string, params: any) => {
@@ -60,8 +76,10 @@ const http: Http = {
       NProgress.done()
       return res.data
     } catch (err: any) {
+      console.log(err.data);
+
       NProgress.done()
-      throw err.response?.data
+      throw err.response?.data || err?.data
     }
   },
   upload: async (url: string, file: File) => {
@@ -76,7 +94,7 @@ const http: Http = {
       return res.data
     } catch (err: any) {
       NProgress.done()
-      throw err.response?.data
+      throw err.response?.data || err?.data
     }
   },
   download: (url: string) => {

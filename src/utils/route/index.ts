@@ -8,9 +8,9 @@ const getModules = (): any => {
   return components
 }
 const modules = getModules()
-const reg = /^\/src\/views\/(.+)\/index\.vue$/
-const arr = []
-Object.keys(modules).forEach((item: any) => arr.push(item.match(reg)[1]))
+// const reg = /^\/src\/views\/(.+)\/index\.vue$/
+// const arr = []
+// Object.keys(modules).forEach((item: any) => arr.push(item.match(reg)[1]))
 
 export const setRoute = (routeList: any): void => {
   const useStore = LoginStore()
