@@ -54,7 +54,7 @@ const submitLogin = async (formEl: FormInstance | undefined): Promise<void> => {
         password: FormData.password
       })
         .then(res => {
-          useStore.SET_USERINFO(res.data)
+          useStore.SET_userInfo(res.data)
           setTimeout(() => router.push('/'), 1000)
         })
         .catch(res => {

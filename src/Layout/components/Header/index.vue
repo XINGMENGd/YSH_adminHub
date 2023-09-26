@@ -29,7 +29,7 @@ import { UserFilled } from '@element-plus/icons-vue'
 
 defineProps<{ isCollapse: boolean }>()
 const useStore = LoginStore()
-const { username } = useStore.GET_USERINFO
+const { username } = useStore.GET_userInfo
 const emit = defineEmits(['UPDATE_IsCollapse', 'submit']) // 变量名要与父组件声明的一致，注意，并非是传递给子组件调用的方法名
 const updateIsCollapse = (): void => {
   emit('submit')

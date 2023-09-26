@@ -38,7 +38,7 @@ const useStore = LoginStore()
 // 通过pinia中提供的storeToRefs方法来解决，推荐使用
 const { isCollapse } = storeToRefs(useStore)
 const updateIsCollapse = (): void => {
-  useStore.UPDATE_IsCollapse()
+  useStore.UPDATE_isCollapse()
 }
 
 // console.log(import.meta.env)

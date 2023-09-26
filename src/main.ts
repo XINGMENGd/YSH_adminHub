@@ -14,14 +14,15 @@ const app = createApp(App)
 
 router.beforeEach(async (to, from, next) => {
   const useStore = LoginStore()
-  const { token } = useStore.GET_USERINFO
+  const { token } = useStore.GET_userInfo
+
   if (token !== '') {
     // 登录过就不能访问登录界面，需要中断这一次路由守卫，执行下一次路由守卫，并且下一次守卫的to是主页'
     if (to.path === '/login') {
       next({ path: '/' })
     }
     // 保存在store中路由不为空则放行 (如果执行了刷新操作，则 store 里的路由为空，此时需要重新添加路由)
-    if (useStore.GET_ROUTERS.length > 0) {
+    if (useStore.GET_routers.length > 0) {
       // if (!!useStore.GET_Routers.length || to.name != null) {
       // 放行
       next()

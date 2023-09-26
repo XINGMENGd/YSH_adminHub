@@ -14,7 +14,7 @@ import subMenu from './components/subMenu/index.vue'
 // 声明个变量统一接受传值
 defineProps<{ isCollapse: boolean }>()
 const useStore = LoginStore()
-const routeMenu = useStore.GET_ROUTERS
+const routeMenu = useStore.GET_routers
 
 </script>
 
