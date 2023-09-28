@@ -8,6 +8,7 @@ axios.defaults.timeout = 1000 * 20
 axios.defaults.headers.post['Content-Type'] = 'application/json;charset=UTF-8'
 axios.interceptors.request.use(
   (config) => {
+    
     const useStore = LoginStore()
     const { token } = useStore.GET_userInfo
 

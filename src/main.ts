@@ -1,5 +1,4 @@
 import { createApp } from 'vue'
-import App from './App.vue'
 import router from '@/router/index' // 绝对不要加.ts后缀
 import store from '@/stores/index'
 
@@ -9,10 +8,12 @@ import { setRoute } from '@/utils/route'
 
 import http from '@/api/http'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
+import App from './App.vue'
 
 const app = createApp(App)
 
 router.beforeEach(async (to, from, next) => {
+  
   const useStore = LoginStore()
   const { token } = useStore.GET_userInfo
 

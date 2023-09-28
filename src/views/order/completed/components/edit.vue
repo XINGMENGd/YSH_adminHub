@@ -14,16 +14,18 @@
         <el-input v-model.number="formData.stock" autocomplete="off" />
       </el-form-item>
       <el-form-item label="商品分类" prop="category" :label-width="formLabelWidth">
-        <el-input v-model="formData.category" autocomplete="off" />
+        <el-select v-model.number="formData.category" class="m-2" placeholder="Select" size="default">
+          <el-option v-for="item in categoryOptions" :key="item.value" :label="item.label" :value="item.value" />
+        </el-select>
       </el-form-item>
       <el-form-item label="商品状态" prop="status" :label-width="formLabelWidth">
-        <el-select v-model="formData.status" class="m-2" placeholder="Select" size="default">
+        <el-select v-model.number="formData.status" class="m-2" placeholder="Select" size="default">
           <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value" />
         </el-select>
       </el-form-item>
       <el-form-item label="商品图片" prop="image" :label-width="formLabelWidth">
         <el-upload v-model:file-list="formData.imageArray" action="http://localhost:3000/nodeMock/uploadImage"
-          list-type="picture-card">
+          list-type="picture-card" :on-preview="handlePictureCardPreview">
           <Plus style="width: 2em; height: 2em;" />
         </el-upload>
       </el-form-item>
@@ -35,51 +37,44 @@
       </span>
     </template>
   </el-dialog>
+  <el-dialog v-model="dialogVisible2" width="60%" top="5vh">
+    <img w-full :src="dialogImageUrl" alt="Preview Image" />
+  </el-dialog>
 </template>
 
 <script lang='ts' setup>
 import { ref, reactive } from 'vue'
-import { dayjs, type FormInstance } from 'element-plus'
+import { dayjs } from 'element-plus'
+import { type FormInstance, UploadProps } from 'element-plus'
 import LoginStore from '@/stores/login'
 import { updateProduct } from '@/api/Product/index'
 import { removeImages } from '@/api/common/index'
 import { calculateHash } from '@/utils/util'
 
 const emit = defineEmits(['callback'])
+const { categoryList, statusList } = defineProps<{ categoryList: any, statusList: any }>()
 const useStore = LoginStore()
 const { id } = useStore.GET_userInfo
 const formLabelWidth = '90px'
 const formRef = ref<FormInstance>();
 const DialogVisible = ref(false)
+const dialogVisible2 = ref(false)
+const dialogImageUrl = ref('')
 const formData = ref({
   name: "",
   description: "", // 商品描述
   price: 0,
   stock: 0, // 商品库存
-  category: 0, // 商品分类
+  category: '', // 商品分类
+  status: '',
   imageArray: [] as any[],
   images: [] as string[], // 传给后端的图片列表
-  status: "",
-  sellerId: "",
+  sellerId: 0,
   updated_at: ''
 })
 const oldImages = ref<string[]>([]);
-const statusOptions = reactive([{
-  value: 0,
-  label: '待发售',
-},
-{
-  value: 1,
-  label: '上架',
-},
-{
-  value: 2,
-  label: '下架',
-},
-{
-  value: 3,
-  label: '售罄',
-}])
+const categoryOptions = categoryList
+const statusOptions = statusList
 const rules = reactive({
   name: [
     { required: true, message: 'Please input ProductName', trigger: 'blur' },
@@ -105,11 +100,11 @@ const reset = () => {
     description: "", // 商品描述
     price: 0,
     stock: 0, // 商品库存
-    category: 0, // 商品分类
+    category: '', // 商品分类
+    status: '',
     imageArray: [],
     images: [],
-    status: "",
-    sellerId: "",
+    sellerId: 0,
     updated_at: ''
   }
 }
@@ -129,6 +124,11 @@ const closeDialog = async (done: () => void) => {
   } catch (error) {
     DialogVisible.value = false
   }
+}
+// 图片预览
+const handlePictureCardPreview: UploadProps['onPreview'] = (uploadFile) => {
+  dialogImageUrl.value = uploadFile.url!
+  dialogVisible2.value = true
 }
 // 提交表单
 const submitEmit = async (formEl: FormInstance | undefined) => {
@@ -159,6 +159,8 @@ const submitEmit = async (formEl: FormInstance | undefined) => {
   if (deletedArray.length > 0) {
     await removeImages({ deletedArray }).then(res => {
       console.log(res);
+    }).catch(error => {
+      console.log(error);
     })
   }
 

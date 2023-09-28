@@ -4,7 +4,7 @@ export default defineStore('LoginStore', {
   state: () => {
     return {
       userInfo: { // 用户信息
-        id: '',
+        id: 0,
         token: '',
         username: '',
         avatar: ''

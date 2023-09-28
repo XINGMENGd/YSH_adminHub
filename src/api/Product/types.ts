@@ -3,10 +3,10 @@ export interface createProductParams {
     description: string
     price: number
     stock: number
-    category: string | number
-    status: string | number
+    category: number | string
+    status: number | string
     imageArray: Array<string>
-    sellerId: string | number
+    sellerId: number
     created_at?: string
 }
 
@@ -15,9 +15,9 @@ export interface updateProductParams {
     description: string
     price: number
     stock: number
-    category: string | number
-    status: string | number
+    category: number | string
+    status: number | string
     imageArray: Array<string>
-    sellerId: string | number
+    sellerId: number
     updated_at?: string
 }

@@ -1,9 +1,7 @@
 <template>
   <el-upload v-model:file-list="fileList" action="http://localhost:3000/nodeMock/upload" list-type="picture-card"
     :on-success="handlerSuccess" :on-remove="handleRemove">
-    <el-icon>
-      <Plus />
-    </el-icon>
+    <Plus style="width: 2em; height: 2em;" />
   </el-upload>
 
   <el-dialog v-model="dialogVisible">
@@ -13,7 +11,6 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue'
-import { Plus } from '@element-plus/icons-vue'
 import type { UploadProps, UploadUserFile } from 'element-plus'
 import { removeImages } from '@/api/common/index'
 
