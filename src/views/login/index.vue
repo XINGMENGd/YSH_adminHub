@@ -1,15 +1,15 @@
 <template>
   <div class="FormBox">
-    <el-form :rules="rules" :model="Form" label-width="120px">
+    <el-form :rules="rules" :model="FormData" ref="formRef" label-width="120px">
       <el-form-item label="username" prop="username">
-        <el-input v-model="Form.username" />
+        <el-input v-model="FormData.username" />
       </el-form-item>
       <el-form-item label="password" prop="password">
-        <el-input v-model="Form.password" />
+        <el-input v-model="FormData.password" />
       </el-form-item>
 
       <el-form-item>
-        <el-button type="success" @click="toLogin">按钮</el-button>
+        <el-button type="success" @click="submitLogin(formRef)">按钮</el-button>
       </el-form-item>
     </el-form>
 
@@ -17,8 +17,9 @@
 </template>
 
 <script lang="ts" setup>
-import { reactive } from 'vue'
+import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
+import type { FormInstance } from 'element-plus'
 
 import LoginStore from '@/stores/login'
 import { login } from '@/api/Authentication'
@@ -26,7 +27,8 @@ import { login } from '@/api/Authentication'
 const useStore = LoginStore()
 const router = useRouter()
 
-const Form = reactive({
+const formRef = ref<FormInstance>();
+const FormData = reactive({
   username: 'admin',
   password: '123456'
 })
@@ -42,24 +44,28 @@ const rules = reactive({
   ]
 })
 
-const toLogin = async (): Promise<void> => {
-  login({
-    username: Form.username,
-    password: Form.password
-  })
-    .then(res => {
-      if (res.code !== 200) return ElMessage.error(res.message)
-      ElMessage({
-        message: '登录成功，即将跳转',
-        type: 'success',
-        duration: 1000
+const submitLogin = async (formEl: FormInstance | undefined): Promise<void> => {
+  if (!formEl) return
+
+  await formEl.validate((valid, fields) => {
+    if (valid) {
+      login({
+        username: FormData.username,
+        password: FormData.password
       })
-      useStore.SET_USERINFO(res.data)
-      setTimeout(() => router.push('/'), 1000)
-    })
-    .catch(error => {
-      console.error(error)
-    })
+        .then(res => {
+          useStore.SET_userInfo(res.data)
+          setTimeout(() => router.push('/'), 1000)
+        })
+        .catch(res => {
+          console.log(res)
+        })
+    } else {
+      console.log('error submit!', fields)
+      return false
+    }
+  })
+
 }
 
 </script>

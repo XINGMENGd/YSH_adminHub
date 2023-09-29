@@ -6,5 +6,5 @@ export const login = (params: T.LoginParams): Promise<any> => {
 }
 
 export const FetchRoute = (): Promise<any> => {
-  return http.post('/FetchRouteList')
+  return http.get('/FetchRouteList')
 }

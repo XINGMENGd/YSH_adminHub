@@ -14,9 +14,9 @@ function _resolve(dir: string) {
 export default defineConfig({
   plugins: [
     vue(),
-    eslintPlugin({
-      include: ['src/**/*.ts', 'src/**/*.vue', 'src/*.ts', 'src/*.vue'],
-    }),
+    // eslintPlugin({
+    //   include: ['src/**/*.ts', 'src/**/*.vue', 'src/*.ts', 'src/*.vue'],
+    // }),
     viteMockServe({
       mockPath: '/src/mock',  // 设置mock.ts 文件的存储文件夹  
       supportTs: true,
@@ -30,9 +30,7 @@ export default defineConfig({
       resolvers: [ElementPlusResolver()],
       dts: 'src/auto-import.d.ts',   // 声明文件的存放位置
     }),
-    Components({
-      resolvers: [ElementPlusResolver()],
-    }),
+    Components({ resolvers: [ElementPlusResolver()] }),
   ],
   resolve: {
     alias: {
@@ -59,10 +57,6 @@ export default defineConfig({
     },
     open: true,  // 是否在浏览器打开
     https: false,
-    // 在开发服务器中禁用 ESLint 检查
-    hmr: {
-      overlay: false
-    }
   },
   // build: {
   //   // 集成 ESLint 到构建过程中

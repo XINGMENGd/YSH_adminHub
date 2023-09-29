@@ -4,6 +4,7 @@ export default defineStore('LoginStore', {
   state: () => {
     return {
       userInfo: { // 用户信息
+        id: 0,
         token: '',
         username: '',
         avatar: ''
@@ -13,23 +14,24 @@ export default defineStore('LoginStore', {
     }
   },
   getters: {
-    GET_USERINFO: state => state.userInfo,
-    GET_ROUTERS: state => state.routers
+    GET_userInfo: state => state.userInfo,
+    GET_routers: state => state.routers
   },
   actions: {
-    LOGOUT () {
+    LOGOUT() {
       this.$reset()
       window.location.reload()
     },
-    UPDATE_IsCollapse () {
+    UPDATE_isCollapse() {
       this.isCollapse = !this.isCollapse
     },
-    SET_USERINFO (data: any) {
-      const { token, username } = data
+    SET_userInfo(data: any) {
+      const { id, token, username } = data
+      this.userInfo.id = id
       this.userInfo.token = token
       this.userInfo.username = username
     },
-    SET_ROUTERS (routers: any) {
+    SET_routers(routers: any) {
       this.routers = routers
     }
   },

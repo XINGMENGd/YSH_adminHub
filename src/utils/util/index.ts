@@ -5,6 +5,32 @@
  * @param value 去重的属性值
  * @returns 
  */
-export function uniqueArray(arr1: any[], arr2: any[],value:any) {
+export const uniqueArray = (arr1: any[], arr2: any[], value: any) => {
   return arr1.filter((item) => !arr2.some((ele) => ele[value] === item[value]));
+}
+
+export const setCookie = (key: string, value: any) => {
+  document.cookie = `${key}=${value}`
+}
+
+export const getCookie = (key: string) => {
+  const cookieString = document.cookie;
+  const cookies = cookieString.split(';').map(cookie => cookie.trim());
+  const tokenCookie: any = cookies.find(cookie => cookie.startsWith(`${key}=`));
+
+  const token = tokenCookie?.split('=')[1];
+  console.log(token);
+
+  return token
+}
+
+// 对图片地址hash加密
+export const calculateHash = async (inputString: any) => {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(inputString);
+  const digest = await crypto.subtle.digest('SHA-256', data);
+
+  const hashArray = Array.from(new Uint8Array(digest));
+  const hashHex = hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
+  return hashHex;
 }

@@ -1,9 +1,7 @@
 <template>
-  <el-upload v-model:file-list="fileList" action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
-    list-type="picture-card" :on-preview="handlePictureCardPreview" :on-remove="handleRemove">
-    <el-icon>
-      <Plus />
-    </el-icon>
+  <el-upload v-model:file-list="fileList" action="http://localhost:3000/nodeMock/upload" list-type="picture-card"
+    :on-success="handlerSuccess" :on-remove="handleRemove">
+    <Plus style="width: 2em; height: 2em;" />
   </el-upload>
 
   <el-dialog v-model="dialogVisible">
@@ -13,54 +11,39 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue'
-import { Plus } from '@element-plus/icons-vue'
-
 import type { UploadProps, UploadUserFile } from 'element-plus'
+import { removeImages } from '@/api/common/index'
 
-const fileList = ref<UploadUserFile[]>([
-  {
-    name: 'food.jpeg',
-    url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'
-  },
-  {
-    name: 'plant-1.png',
-    url: '/images/plant-1.png'
-  },
-  {
-    name: 'food.jpeg',
-    url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'
-  },
-  {
-    name: 'plant-2.png',
-    url: '/images/plant-2.png'
-  },
-  {
-    name: 'food.jpeg',
-    url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'
-  },
-  {
-    name: 'figure-1.png',
-    url: '/images/figure-1.png'
-  },
-  {
-    name: 'food.jpeg',
-    url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'
-  },
-  {
-    name: 'figure-2.png',
-    url: '/images/figure-2.png'
-  }
-])
+const fileList = ref<UploadUserFile[]>([])
 
 const dialogImageUrl = ref('')
 const dialogVisible = ref(false)
 
-const handleRemove: UploadProps['onRemove'] = (uploadFile, uploadFiles) => {
-  console.log(uploadFile, uploadFiles)
+const handleRemove: UploadProps['onRemove'] = (uploadFile) => {
+  const filesArr: string[] = []
+  const fileFormat = uploadFile.name.split('.')
+  const extension = fileFormat[fileFormat.length - 1]; // 图片后缀
+  calculateHash(uploadFile.name).then(hash => {
+    filesArr.push(hash + '.' + extension)
+    removeImages({ filesArr }).then(res => {
+      console.log(res);
+    })
+  })
+
+
+}
+async function calculateHash(inputString: any) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(inputString);
+  const digest = await crypto.subtle.digest('SHA-256', data);
+
+  const hashArray = Array.from(new Uint8Array(digest));
+  const hashHex = hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
+
+  return hashHex;
 }
 
-const handlePictureCardPreview: UploadProps['onPreview'] = (uploadFile) => {
-  dialogImageUrl.value = uploadFile.url ?? ''
-  dialogVisible.value = true
+const handlerSuccess: UploadProps['onSuccess'] = (response, uploadFile, uploadFiles) => {
+  console.log(uploadFiles);
 }
 </script>
