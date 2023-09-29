@@ -1,5 +1,5 @@
 <template>
-  <el-drawer v-model="drawer" title="商品详情" class="drawer">
+  <el-drawer v-model="drawer" title="商品详情">
     <div class="detailItem">
       <label for="Name" class="itemLabel">商品名称:</label>
       <span>{{ productInfo.name }}</span>
@@ -18,11 +18,11 @@
     </div>
     <div class="detailItem">
       <label for="Category" class="itemLabel">商品分类:</label>
-      <span>{{ categoryList[productInfo.category - 1].label || '暂无数据' }}</span>
+      <span>{{ categoryList[productInfo.category - 1]?.label || '暂无数据' }}</span>
     </div>
     <div class="detailItem">
       <label for="Status" class="itemLabel">商品状态:</label>
-      <span>{{ statusList[productInfo.status - 1].label || '暂无数据' }}</span>
+      <span>{{ statusList[productInfo.status - 1]?.label || '暂无数据' }}</span>
     </div>
     <div class="detailItem">
       <label for="ImageArray" class="itemLabel">商品图:</label>
@@ -58,11 +58,7 @@ const showDrawer = (row: any) => {
 defineExpose({ showDrawer })
 </script>
 
-<style lang="less">
-.drawer {
-  width: 44% !important;
-}
-
+<style lang="less" scoped>
 .detailItem {
   margin-bottom: 20px;
 

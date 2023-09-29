@@ -1,11 +1,6 @@
 import http from '@/api/http'
 import type * as T from './types'
-import type * as CT from '../common/types'
 
-// 查询商品列表
-export const getProductList = (params: CT.tableParams): Promise<any> => {
-  return http.get('/getProductList', params)
-}
 // 查询商品分类列表
 export const getProductCategoryList = (): Promise<any> => {
   return http.get('/getProductCategoryList')
