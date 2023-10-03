@@ -3,6 +3,7 @@
 </template>
 
 <script lang="ts" setup>
+
 // import { defineComponent, ref, getCurrentInstance } from 'vue'
 // 接收全局方法
 // let instance: any = getCurrentInstance()

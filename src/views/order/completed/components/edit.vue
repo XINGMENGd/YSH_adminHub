@@ -1,14 +1,11 @@
 <template>
   <el-dialog v-model="DialogVisible" title="新增商品" top="5vh" :before-close="closeDialog">
     <el-form :model="formData" ref="formRef" :rules="rules">
-      <el-form-item label="商品名称" prop="name" :label-width="formLabelWidth">
-        <el-input v-model="formData.name" autocomplete="off" />
-      </el-form-item>
       <el-form-item label="商品描述" prop="description" :label-width="formLabelWidth">
         <el-input v-model="formData.description" autocomplete="off" />
       </el-form-item>
       <el-form-item label="商品价格" prop="price" :label-width="formLabelWidth">
-        <el-input v-model.number="formData.price" autocomplete="off" />
+        <el-input v-model="formData.price" @blur="formData.price = formData.price * 1" autocomplete="off" />
       </el-form-item>
       <el-form-item label="商品库存" prop="stock" :label-width="formLabelWidth">
         <el-input v-model.number="formData.stock" autocomplete="off" />
@@ -52,7 +49,7 @@ import { removeImages } from '@/api/common/index'
 import { calculateHash } from '@/utils/util'
 
 const emit = defineEmits(['callback'])
-const { categoryList, statusList } = defineProps<{ categoryList: any, statusList: any }>()
+const { productCategoryList, productStatusList } = defineProps<{ productCategoryList: any, productStatusList: any }>()
 const useStore = LoginStore()
 const { id } = useStore.GET_userInfo
 const formLabelWidth = '90px'
@@ -61,7 +58,6 @@ const DialogVisible = ref(false)
 const dialogVisible2 = ref(false)
 const dialogImageUrl = ref('')
 const formData = ref({
-  name: "",
   description: "", // 商品描述
   price: 0,
   stock: 0, // 商品库存
@@ -73,13 +69,9 @@ const formData = ref({
   updated_at: ''
 })
 const oldImages = ref<string[]>([]);
-const categoryOptions = categoryList
-const statusOptions = statusList
+const categoryOptions = productCategoryList
+const statusOptions = productStatusList
 const rules = reactive({
-  name: [
-    { required: true, message: 'Please input ProductName', trigger: 'blur' },
-    { min: 2, max: 9, message: 'Length should be 2 to 9', trigger: 'blur' }
-  ],
   description: [
     { required: true, message: 'Please input Description', trigger: 'blur' },
   ],
@@ -90,13 +82,12 @@ const rules = reactive({
     { required: true, message: 'Stock minimum 1', trigger: 'blur' },
   ],
   category: [],
-  image: [],
+  imageArray: [],
   status: []
 })
 // 重置数据
 const reset = () => {
   formData.value = {
-    name: "",
     description: "", // 商品描述
     price: 0,
     stock: 0, // 商品库存

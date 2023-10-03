@@ -6,7 +6,7 @@ export function useTable(params: any) {
   const {
     url,
     initialPage = 1,
-    initialPageSize = 20,
+    initialPageSize = 10,
     initialSortDirection = '',
     initialSortBy = '',
   } = params
@@ -29,8 +29,8 @@ export function useTable(params: any) {
         sort: sortBy.value,
         direction: sortDirection.value,
       })
-      tableData.value = response.data
-      // total.value = response.data.total
+      tableData.value = response.data.list
+      total.value = response.data.total
     } catch (error) {
       console.error(error)
     } finally {

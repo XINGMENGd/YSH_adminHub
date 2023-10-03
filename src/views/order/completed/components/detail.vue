@@ -1,5 +1,5 @@
 <template>
-  <el-drawer v-model="drawer" title="商品详情">
+  <el-drawer v-model="drawer" title="商品详情" class="common-drawer">
     <div class="detailItem">
       <label for="Name" class="itemLabel">商品名称:</label>
       <span>{{ productInfo.name }}</span>
@@ -18,11 +18,11 @@
     </div>
     <div class="detailItem">
       <label for="Category" class="itemLabel">商品分类:</label>
-      <span>{{ categoryList[productInfo.category - 1]?.label || '暂无数据' }}</span>
+      <span>{{ productCategoryList[productInfo.category - 1]?.label || '暂无数据' }}</span>
     </div>
     <div class="detailItem">
       <label for="Status" class="itemLabel">商品状态:</label>
-      <span>{{ statusList[productInfo.status - 1]?.label || '暂无数据' }}</span>
+      <span>{{ productStatusList[productInfo.status - 1]?.label || '暂无数据' }}</span>
     </div>
     <div class="detailItem">
       <label for="ImageArray" class="itemLabel">商品图:</label>
@@ -37,7 +37,7 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
 
-const { categoryList, statusList } = defineProps<{ categoryList: any, statusList: any }>()
+const { productCategoryList, productStatusList } = defineProps<{ productCategoryList: any, productStatusList: any }>()
 const drawer = ref(false)
 const productInfo = ref({
   name: "",
@@ -59,6 +59,7 @@ defineExpose({ showDrawer })
 </script>
 
 <style lang="less" scoped>
+
 .detailItem {
   margin-bottom: 20px;
 

@@ -1,5 +1,4 @@
 export interface createProductParams {
-    name: string
     description: string
     price: number
     stock: number
@@ -11,7 +10,6 @@ export interface createProductParams {
 }
 
 export interface updateProductParams {
-    name: string
     description: string
     price: number
     stock: number
