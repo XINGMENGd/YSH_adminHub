@@ -4,7 +4,7 @@ export default defineStore('AuthStore', {
   state: () => {
     return {
       userInfo: { // 用户信息
-        id: 0,
+        id: '',
         token: '',
         username: '',
         avatar: '',
@@ -27,7 +27,7 @@ export default defineStore('AuthStore', {
       this.isCollapse = !this.isCollapse
     },
     SET_userInfo(data: any) {
-      const { id, token, username,roles } = data
+      const { id, token, username, roles } = data
       this.userInfo.id = id
       this.userInfo.token = token
       this.userInfo.username = username

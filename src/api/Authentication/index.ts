@@ -5,6 +5,6 @@ export const login = (params: T.LoginParams): Promise<any> => {
   return http.post('/login', params)
 }
 
-export const getRoute = (params: T.getRouteParams): Promise<any> => {
-  return http.post('/getRoutes', params)
+export const getRoute = (): Promise<any> => {
+  return http.post('/getRoutes')
 }

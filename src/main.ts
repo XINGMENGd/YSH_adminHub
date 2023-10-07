@@ -15,7 +15,7 @@ const app = createApp(App)
 router.beforeEach(async (to, from, next) => {
 
   const useStore = LoginStore()
-  const { token, roles } = useStore.GET_userInfo
+  const { token } = useStore.GET_userInfo
 
   if (token !== '') {
     // 登录过就不能访问登录界面，需要中断这一次路由守卫，执行下一次路由守卫，并且下一次守卫的to是主页'
@@ -29,7 +29,7 @@ router.beforeEach(async (to, from, next) => {
       next()
     } else {
       // 将路由添加到 store 中，用来标记已添加动态路由
-      const { data } = await getRoute({ roles })
+      const { data } = await getRoute()
       setRoute(data)
       // 如果 addRoutes 并未完成，路由守卫会一层一层的执行执行，直到 addRoutes 完成，找到对应的路由
       next({ ...to, replace: true })

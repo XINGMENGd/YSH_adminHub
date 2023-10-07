@@ -8,11 +8,11 @@ axios.defaults.timeout = 1000 * 20
 axios.defaults.headers.post['Content-Type'] = 'application/json;charset=UTF-8'
 axios.interceptors.request.use(
   (config) => {
-    
     const useStore = LoginStore()
-    const { token } = useStore.GET_userInfo
+    const { id, token } = useStore.GET_userInfo
 
     if (token !== '') {
+      config.headers['User-Identifier'] = id
       config.headers.Authorization = token
     }
     return config
@@ -35,6 +35,11 @@ axios.interceptors.response.use((res: any) => {
       }
       return resolve(res)
     } else {
+      if (res.data.code === 401) {
+        const useStore = LoginStore()
+        useStore.LOGOUT()
+        return
+      }
       if (res.data.message !== '图片不存在') {
         ElMessage.error({
           message: res.data.message,
@@ -44,10 +49,6 @@ axios.interceptors.response.use((res: any) => {
       }
       return reject(res)
     }
-    // if (res.data.code === 111) {
-    //   localStorage.setItem('token', '')
-    //   // token过期操作
-    // }
   })
 })
 

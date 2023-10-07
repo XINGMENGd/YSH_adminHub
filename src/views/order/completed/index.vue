@@ -6,19 +6,19 @@
   <el-table ref="table" :data="tableData" :height="tableHeight" class="common-table" size="small"
     @sort-change="sortChange">
     <el-table-column prop="id" label="商品ID" width="70" />
-    <el-table-column prop="description" width="100" fixed="left" label="描述" :show-overflow-tooltip="{
+    <el-table-column prop="description" width="160" fixed="left" label="描述" :show-overflow-tooltip="{
       'effect': 'dark',
       'placement': 'right'
     }" />
-    <el-table-column prop="price" label="价格" width="90" />
-    <el-table-column prop="stock" label="库存" width="90" sortable />
+    <el-table-column prop="price" label="价格" width="70" />
+    <el-table-column prop="stock" label="库存" width="70" sortable />
     <el-table-column prop="sold_quantity" label="卖出数量" width="90" sortable />
-    <el-table-column prop="category" label="分类">
+    <el-table-column prop="category" label="分类" width="80">
       <template #default="scope">
         {{ showProductCategoryList[scope.row.category]?.label || '暂无数据' }}
       </template>
     </el-table-column>
-    <el-table-column prop="status" label="状态">
+    <el-table-column prop="status" label="状态" width="80">
       <template #default="scope">
         {{ showProductStatusList[scope.row.status]?.label || '暂无数据' }}
       </template>
