@@ -24,7 +24,11 @@ export const getCookie = (key: string) => {
   return token
 }
 
-// 对图片地址hash加密
+/**
+ * 对图片地址hash加密
+ * @param inputString 需要加密的图片路径
+ * @returns 
+ */
 export const calculateHash = async (inputString: any) => {
   const encoder = new TextEncoder();
   const data = encoder.encode(inputString);

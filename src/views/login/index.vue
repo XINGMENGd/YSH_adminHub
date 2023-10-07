@@ -21,7 +21,7 @@ import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import type { FormInstance } from 'element-plus'
 
-import LoginStore from '@/stores/login'
+import LoginStore from '@/stores/Auth'
 import { login } from '@/api/Authentication'
 
 const useStore = LoginStore()

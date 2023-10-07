@@ -1,6 +1,6 @@
 import router from '@/router/index'
 import Layout from '@/Layout/index.vue'
-import LoginStore from '@/stores/login'
+import LoginStore from '@/stores/Auth'
 
 const getModules = (): any => {
   // vite无法像webpack一样在import引入中使用模板字符串，改用这个引入全部页面，在去根据后端返回路由名匹配进行路由组件懒加载
@@ -16,7 +16,7 @@ export const setRoute = (routeList: any): void => {
   const useStore = LoginStore()
   useStore.SET_routers(routeList)
   routeList = assistSetRoute(routeList)
-  routeList.forEach((item: any) => router?.addRoute(item))
+  routeList?.forEach((item: any) => router?.addRoute(item))
   router.addRoute({
     path: '/:pathMatch(.*)',
     redirect: '/NotFound',
@@ -32,7 +32,7 @@ interface routesItem {
 }
 
 const assistSetRoute = (routeList: any): any[] => {
-  routeList.forEach((item: routesItem) => {
+  routeList?.forEach((item: routesItem) => {
     if (item.component === 'Layout') {
       item.component = Layout
       item.children !== null ? assistSetRoute(item.children) : ''

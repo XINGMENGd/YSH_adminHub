@@ -21,7 +21,7 @@
         </el-select>
       </el-form-item>
       <el-form-item label="商品图片" prop="image" :label-width="formLabelWidth">
-        <el-upload v-model:file-list="formData.imageArray" action="http://localhost:3000/nodeMock/uploadImage"
+        <el-upload v-model:file-list="formData.imageArray" action="http://localhost:3000/api/uploadImage"
           list-type="picture-card" :on-preview="handlePictureCardPreview">
           <Plus style="width: 2em; height: 2em;" />
         </el-upload>
@@ -43,7 +43,7 @@
 import { ref, reactive } from 'vue'
 import { dayjs } from 'element-plus'
 import { type FormInstance, UploadProps } from 'element-plus'
-import LoginStore from '@/stores/login'
+import LoginStore from '@/stores/Auth'
 import { updateProduct } from '@/api/Product/index'
 import { removeImages } from '@/api/common/index'
 import { calculateHash } from '@/utils/util'
@@ -65,7 +65,7 @@ const formData = ref({
   status: '',
   imageArray: [] as any[],
   images: [] as string[], // 传给后端的图片列表
-  sellerId: 0,
+  seller_id: 0,
   updated_at: ''
 })
 const oldImages = ref<string[]>([]);
@@ -95,7 +95,7 @@ const reset = () => {
     status: '',
     imageArray: [],
     images: [],
-    sellerId: 0,
+    seller_id: 0,
     updated_at: ''
   }
 }
@@ -157,7 +157,7 @@ const submitEmit = async (formEl: FormInstance | undefined) => {
 
   await formEl.validate((valid, fields) => {
     if (valid) {
-      formData.value.sellerId = id
+      formData.value.seller_id = id
       formData.value.images = images
       formData.value.updated_at = dayjs().format('YYYY-MM-DD HH:mm:ss')
       updateProduct(formData.value).then(res => {

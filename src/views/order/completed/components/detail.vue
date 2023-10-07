@@ -18,11 +18,11 @@
     </div>
     <div class="detailItem">
       <label for="Category" class="itemLabel">商品分类:</label>
-      <span>{{ productCategoryList[productInfo.category - 1]?.label || '暂无数据' }}</span>
+      <span>{{ productCategoryList[productInfo.category]?.label || '暂无数据' }}</span>
     </div>
     <div class="detailItem">
       <label for="Status" class="itemLabel">商品状态:</label>
-      <span>{{ productStatusList[productInfo.status - 1]?.label || '暂无数据' }}</span>
+      <span>{{ productStatusList[productInfo.status]?.label || '暂无数据' }}</span>
     </div>
     <div class="detailItem">
       <label for="ImageArray" class="itemLabel">商品图:</label>
@@ -47,7 +47,7 @@ const productInfo = ref({
   category: 0, // 商品分类
   imageArray: [] as any[],
   status: 0,
-  sellerId: 0,
+  seller_id: 0,
   created_at: ''
 })
 const showDrawer = (row: any) => {
@@ -59,7 +59,6 @@ defineExpose({ showDrawer })
 </script>
 
 <style lang="less" scoped>
-
 .detailItem {
   margin-bottom: 20px;
 

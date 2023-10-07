@@ -23,7 +23,7 @@ import Aside from './components/Aside/index.vue'
 import Header from './components/Header/index.vue'
 import Main from './components/Main/index.vue'
 
-import LoginStore from '@/stores/login'
+import LoginStore from '@/stores/Auth'
 import { storeToRefs } from 'pinia'
 import { useWindowResize } from '@/hooks/useWindowResize'
 

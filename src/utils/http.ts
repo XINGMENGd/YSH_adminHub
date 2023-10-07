@@ -1,6 +1,6 @@
 import axios from 'axios'
 import NProgress from 'nprogress'
-import LoginStore from '@/stores/login'
+import LoginStore from '@/stores/Auth'
 
 // 设置请求头和请求路径
 axios.defaults.baseURL = import.meta.env.VITE_BASE_API_URL

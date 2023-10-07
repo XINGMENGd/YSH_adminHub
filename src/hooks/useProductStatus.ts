@@ -1,9 +1,10 @@
 import { ref, watch, onMounted } from "vue";
-import http from "@/api/http";
+import http from "@/utils/http";
 
 export function useProductStatus(params: any = {}) {
-  // 获取商品分类和状态列表
+  // 获取商品状态列表
   const productStatusList = ref([] as any)
+  const showProductStatusList = ref([] as any)
   const loading = ref(false) // 是否正在加载数据
 
   // 发起请求获取表格数据
@@ -11,6 +12,9 @@ export function useProductStatus(params: any = {}) {
     try {
       loading.value = true
       const response: any = await http.get('/getProductStatusList')
+      for (const item of response.data) {
+        showProductStatusList.value[item.value] = item
+      }
       productStatusList.value = response.data
     } catch (error) {
       console.error(error)
@@ -29,6 +33,7 @@ export function useProductStatus(params: any = {}) {
 
   return {
     productStatusList,
+    showProductStatusList,
     loading,
     fetchData,
   }

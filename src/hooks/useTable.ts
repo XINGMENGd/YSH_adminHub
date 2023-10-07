@@ -1,5 +1,5 @@
 import { ref, watch, onMounted } from "vue";
-import http from "@/api/http";
+import http from "@/utils/http";
 import type * as CT from '@/api/common/types'
 
 export function useTable(params: any) {
@@ -38,6 +38,11 @@ export function useTable(params: any) {
     }
   }
 
+  const sortChange = ({ column, prop, order }: any) => {
+    sortBy.value = prop
+    sortDirection.value = order == 'ascending' ? 'ASC' : order == 'descending' ? 'DESC' : ''
+  }
+
   // 监听分页、排序参数的变化，重新获取数据
   watch([currentPage, pageSize, sortBy, sortDirection], () => {
     fetchData()
@@ -55,5 +60,6 @@ export function useTable(params: any) {
     sortBy,
     sortDirection,
     fetchData,
+    sortChange
   }
 }

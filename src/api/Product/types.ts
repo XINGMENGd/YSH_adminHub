@@ -5,7 +5,7 @@ export interface createProductParams {
     category: number | string
     status: number | string
     imageArray: Array<string>
-    sellerId: number
+    seller_id: number
     created_at?: string
 }
 
@@ -16,6 +16,6 @@ export interface updateProductParams {
     category: number | string
     status: number | string
     imageArray: Array<string>
-    sellerId: number
+    seller_id: number
     updated_at?: string
 }

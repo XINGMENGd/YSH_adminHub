@@ -1,9 +1,10 @@
 import { ref, watch, onMounted } from "vue";
-import http from "@/api/http";
+import http from "@/utils/http";
 
 export function useProductCategory(params: any = {}) {
-  // 获取商品分类和状态列表
+  // 获取商品分类列表
   const productCategoryList = ref([] as any)
+  const showProductCategoryList = ref([] as any)
   const loading = ref(false) // 是否正在加载数据
 
   // 发起请求获取表格数据
@@ -11,7 +12,11 @@ export function useProductCategory(params: any = {}) {
     try {
       loading.value = true
       const response: any = await http.get('/getProductCategoryList')
+      for (const item of response.data) {
+        showProductCategoryList.value[item.value] = item
+      }
       productCategoryList.value = response.data
+
     } catch (error) {
       console.error(error)
     } finally {
@@ -29,6 +34,7 @@ export function useProductCategory(params: any = {}) {
 
   return {
     productCategoryList,
+    showProductCategoryList,
     loading,
     fetchData,
   }
