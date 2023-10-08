@@ -21,8 +21,8 @@
         </el-select>
       </el-form-item>
       <el-form-item label="商品图片" prop="image" :label-width="formLabelWidth">
-        <el-upload v-model:file-list="formData.imageArray" action="http://localhost:3000/api/uploadImage"
-          list-type="picture-card" :on-preview="handlePictureCardPreview">
+        <el-upload v-model:file-list="formData.imageArray" list-type="picture-card" :on-preview="handlePictureCardPreview"
+          :http-request="uploadImages">
           <Plus style="width: 2em; height: 2em;" />
         </el-upload>
       </el-form-item>
@@ -47,6 +47,7 @@ import LoginStore from '@/stores/Auth'
 import { updateProduct } from '@/api/Product/index'
 import { removeImages } from '@/api/common/index'
 import { calculateHash } from '@/utils/util'
+import http from '@/utils/http'
 
 const emit = defineEmits(['callback'])
 const { productCategoryList, productStatusList } = defineProps<{ productCategoryList: any, productStatusList: any }>()
@@ -115,6 +116,10 @@ const closeDialog = async (done: () => void) => {
   } catch (error) {
     DialogVisible.value = false
   }
+}
+// 自定义上传图片函数
+const uploadImages = (UploadRequestOptions: any) => {
+  http.upload('uploadImage', UploadRequestOptions.file)
 }
 // 图片预览
 const handlePictureCardPreview: UploadProps['onPreview'] = (uploadFile) => {
