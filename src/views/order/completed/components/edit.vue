@@ -42,11 +42,11 @@
 <script lang='ts' setup>
 import { ref, reactive } from 'vue'
 import { dayjs } from 'element-plus'
-import { type FormInstance, UploadProps } from 'element-plus'
+import { type FormInstance, UploadProps, UploadFile, UploadRequestOptions } from 'element-plus'
 import LoginStore from '@/stores/Auth'
 import { updateProduct } from '@/api/Product/index'
-import { removeImages } from '@/api/common/index'
-import { calculateHash } from '@/utils/util'
+import { removeFiles } from '@/api/common/index'
+import { hashFile } from '@/utils/util'
 import http from '@/utils/http'
 
 const emit = defineEmits(['callback'])
@@ -65,7 +65,7 @@ const formData = ref({
   category: '', // 商品分类
   status: '',
   imageArray: [] as any[],
-  images: [] as string[], // 传给后端的图片列表
+  images: [] as any, // 传给后端的图片列表
   seller_id: 0,
   updated_at: ''
 })
@@ -105,7 +105,7 @@ const showDialog = (productInfo: any) => {
   DialogVisible.value = true
   const { imageArray, ...formDataInfo } = productInfo
   oldImages.value = imageArray
-  formDataInfo.imageArray = imageArray.map((item: any) => ({ name: item, url: item })) // 对传递的图片数组加工回显页面
+  formDataInfo.imageArray = imageArray.map((file: any) => ({ name: file.fileName, url: file.fileName, fileType: file.fileType })) // 对传递的图片数组加工回显页面
   formData.value = formDataInfo
 }
 // 关闭对话框
@@ -118,8 +118,34 @@ const closeDialog = async (done: () => void) => {
   }
 }
 // 自定义上传图片函数
-const uploadImages = (UploadRequestOptions: any) => {
-  http.upload('uploadImage', UploadRequestOptions.file)
+const uploadImages = async (UploadFiles: UploadRequestOptions) => {
+  const file = UploadFiles.file
+  const fileSize = file.size // 文件大小
+  const maxFileSize = 5 * 1024 * 1024 // 最大上传文件大小
+  const fileFormat = file.name.split('.')
+  const extension = fileFormat[fileFormat.length - 1]; // 文件后缀
+  // 未超过设定上传上限，直接上传
+  if (fileSize <= maxFileSize) {
+    const hash = await hashFile(file)
+    http.upload('/uploadFile', file, { 'fileType': file.type, 'name': hash + '.' + extension })
+  } else {
+    // 超过设定上传上限，对文件进行切片上传
+    const uploadPromiseArray = [] as any // 定义Promise.all数组
+    const chunks = Math.ceil(fileSize / maxFileSize); // 获取切片的个数
+    const blobSlice = File.prototype.slice || File.prototype.mozSlice || File.prototype.webkitSlice; // 切片方法
+    const hash = await hashFile(file).catch(err => { console.error(err); }) // 获取图片hash
+    for (let i = 0; i < chunks; i++) {
+      const start = i * maxFileSize
+      const end = Math.min(file.size, start + maxFileSize)
+      uploadPromiseArray.push(
+        http.upload('/uploadChunks', blobSlice.call(file, start, end), { 'hash': hash, 'index': i, 'fileType': file.type })
+      )
+    }
+    // 等待所有分片上传完毕发送合并分片请求
+    Promise.all(uploadPromiseArray).then(res => {
+      http.post('/mergeChunks', { 'name': hash + '.' + extension, 'hash': hash, 'total': chunks, 'fileType': file.type })
+    })
+  }
 }
 // 图片预览
 const handlePictureCardPreview: UploadProps['onPreview'] = (uploadFile) => {
@@ -129,41 +155,41 @@ const handlePictureCardPreview: UploadProps['onPreview'] = (uploadFile) => {
 // 提交表单
 const submitEmit = async (formEl: FormInstance | undefined) => {
   if (!formEl) return
-  const images: string[] = [];
-  const reg = /\/uploads\/images\/(.+)/
-  for (const item of formData.value.imageArray as { name: string }[]) {
+  const images = [] as any;
+  const reg = /\/uploads\/(images|videos)\/(.+)/
+  for (const item of formData.value.imageArray as { raw: File, name: string, fileType: string }[]) {
     // 是后端传输回显用的图片，不进行hash加密
     if (item.name.includes("/uploads")) {
       const url: any[] = item.name.match(reg) || []
-      images.push(url[1]);
+      const pushFile = { fileName: url[2], fileType: item.fileType }
+      images.push(pushFile);
     } else {
-      const fileFormat = item.name.split('.');
+      const file = item.raw
+      const fileFormat = file.name.split('.');
       const extension = fileFormat[fileFormat.length - 1]; // 图片后缀
-      const hash = await calculateHash(item.name); // 使用await阻塞,保证图片地址hash转换完成后之前push进数组后再结束本次循环，确保数组每项hash转换完毕在进行后续逻辑
-      images.push(hash + '.' + extension);
+      const hash = await hashFile(file); // 使用await阻塞,保证图片地址hash转换完成后之前push进数组后再结束本次循环，确保数组每项hash转换完毕在进行后续逻辑
+      const pushFile = { fileName: hash + '.' + extension, fileType: file.type }
+      images.push(pushFile);
     }
   }
-
   const deletedArray = oldImages.value
     .map((item: any) => {
-      const matchResult = reg.exec(item);
-      return matchResult ? matchResult[1] : null; // 从匹配结果中提取文件名，若匹配失败则返回null
+      const matchResult = item.fileName.match(reg);
+      return matchResult ? { fileName: matchResult[2], fileType: item.fileType } : null; // 从匹配结果中提取文件名，若匹配失败则返回null
     })
-    .filter((filename: string | null) => filename && !images.includes(filename));
-
+    .filter((file: any | null) => file && !images.some((obj: any) => obj.fileName === file.fileName));
   // 发现新上传的图片列表中有删除旧图片，发送请求给后端删除旧图
   if (deletedArray.length > 0) {
-    await removeImages({ deletedArray }).then(res => {
+    await removeFiles({ deletedArray }).then(res => {
       console.log(res);
     }).catch(error => {
       console.log(error);
     })
   }
-
   await formEl.validate((valid, fields) => {
     if (valid) {
       formData.value.seller_id = id
-      formData.value.images = images
+      formData.value.images = JSON.stringify(images)
       formData.value.updated_at = dayjs().format('YYYY-MM-DD HH:mm:ss')
       updateProduct(formData.value).then(res => {
         DialogVisible.value = false

@@ -42,11 +42,11 @@
 <script lang='ts' setup>
 import { ref, reactive } from 'vue'
 import { dayjs } from 'element-plus'
-import { type FormInstance, UploadProps } from 'element-plus'
+import { type FormInstance, UploadProps, UploadFile, UploadRequestOptions } from 'element-plus'
 import LoginStore from '@/stores/Auth'
 import { createProduct } from '@/api/Product/index'
-import { removeImages } from '@/api/common/index'
-import { calculateHash } from '@/utils/util'
+import { removeFiles } from '@/api/common/index'
+import { hashFile } from '@/utils/util'
 import http from '@/utils/http'
 
 const emit = defineEmits(['callback'])
@@ -64,12 +64,11 @@ const formData = ref({
   stock: 1, // 商品库存
   category: '', // 商品分类
   imageArray: [] as any[],
-  images: [] as string[], // 传给后端的图片列表
+  images: [] as any, // 传给后端的图片列表
   status: '',
   seller_id: 0,
   created_at: ''
 })
-
 const categoryOptions = productCategoryList
 const statusOptions = productStatusList
 const rules = reactive({
@@ -105,27 +104,27 @@ const showDialog = () => DialogVisible.value = true
 // 关闭对话框
 const closeDialog = async (done: () => void) => {
   if (formData.value.imageArray.length > 0) {
-    const deletedArray: string[] = [];
+    const deletedArray = [] as any;
     // 另一种解决异步问题实现方式
     // await Promise.all(
     //   formData.value.images.map(async (item: any) => {
     //     const fileFormat = item.name.split('.');
     //     const extension = fileFormat[fileFormat.length - 1]; // 图片后缀
-
-    //     const hash = await calculateHash(item.name);
-
+    //     const hash = await hashFile(item.raw);
     //     deletedArray.push(hash + '.' + extension);
     //   })
     // );
     // 使用类型断言来为 item 添加类型
-    for (const item of formData.value.imageArray as { name: string }[]) {
-      const fileFormat = item.name.split('.');
+    for (const item of formData.value.imageArray as { name: string, raw: File }[]) {
+      const file = item.raw
+      const fileFormat = file.name.split('.');
       const extension = fileFormat[fileFormat.length - 1]; // 图片后缀
-      const hash = await calculateHash(item.name); // 使用await阻塞,保证图片地址hash转换完成后之前push进数组后再结束本次循环，确保数组每项hash转换完毕在进行后续逻辑
-      deletedArray.push(hash + '.' + extension);
+      const hash = await hashFile(file).catch(err => { console.error(err); })
+      const deleteFile = { fileName: hash + '.' + extension, fileType: file.type }
+      deletedArray.push(deleteFile);
     }
     // 使用await阻塞，确保删除图片完成后再重置数据并关闭Dialog,使用then和catch确保函数执行完毕返回值不影响页面运行
-    await removeImages({ deletedArray }).then(res => {
+    await removeFiles({ deletedArray }).then(res => {
       console.log(res);
     }).catch(error => {
       console.log(error);
@@ -141,42 +140,70 @@ const closeDialog = async (done: () => void) => {
   }
 }
 // 自定义上传图片函数
-const uploadImages = (UploadRequestOptions: any) => {
-  http.upload('uploadImage', UploadRequestOptions.file)
+const uploadImages = async (UploadFiles: UploadRequestOptions) => {
+  const file = UploadFiles.file
+  const fileSize = file.size // 文件大小
+  const maxFileSize = 5 * 1024 * 1024 // 最大上传文件大小
+  const fileFormat = file.name.split('.')
+  const extension = fileFormat[fileFormat.length - 1]; // 文件后缀
+  // 未超过设定上传上限，直接上传
+  if (fileSize <= maxFileSize) {
+    const hash = await hashFile(file)
+    http.upload('/uploadFile', file, { 'fileType': file.type, 'name': hash + '.' + extension })
+  } else {
+    // 超过设定上传上限，对文件进行切片上传
+    const uploadPromiseArray = [] as any // 定义Promise.all数组
+    const chunks = Math.ceil(fileSize / maxFileSize); // 获取切片的个数
+    const blobSlice = File.prototype.slice || File.prototype.mozSlice || File.prototype.webkitSlice; // 切片方法
+    const hash = await hashFile(file).catch(err => { console.error(err); }) // 获取图片hash
+    for (let i = 0; i < chunks; i++) {
+      const start = i * maxFileSize
+      const end = Math.min(file.size, start + maxFileSize)
+      uploadPromiseArray.push(
+        http.upload('/uploadChunks', blobSlice.call(file, start, end), { 'hash': hash, 'index': i, 'fileType': file.type })
+      )
+    }
+    // 等待所有分片上传完毕发送合并分片请求
+    Promise.all(uploadPromiseArray).then(res => {
+      http.post('/mergeChunks', { 'name': hash + '.' + extension, 'hash': hash, 'total': chunks, 'fileType': file.type })
+    })
+  }
 }
-// 图片预览
+// 图片预览      未完成
 const handlePictureCardPreview: UploadProps['onPreview'] = (uploadFile) => {
   dialogImageUrl.value = uploadFile.url!
   dialogVisible2.value = true
 }
 // 点击删除图片 
-const handleRemove: UploadProps['onRemove'] = (uploadFile) => {
-  const deletedArray: string[] = []
-  const fileFormat = uploadFile.name.split('.')
-  const extension = fileFormat[fileFormat.length - 1]; // 图片后缀
-  // 对图片地址进行hash加密
-  calculateHash(uploadFile.name).then(hash => {
-    // 补齐图片路径，追加进数组中传递后端删除
-    deletedArray.push(hash + '.' + extension)
-    removeImages({ deletedArray }).then(res => {
-      console.log(res);
-    })
+async function handleRemove(uploadFile: { raw: any; }) {
+  const file = uploadFile.raw
+  const deletedArray = [] as any
+  const fileFormat = file.name.split('.')
+  const extension = fileFormat[fileFormat.length - 1]; // 文件后缀
+  // 根据后缀判断是删除图片或是视频
+  const hash = await hashFile(file).catch(err => console.error(err))
+  const deleteFile = { fileName: hash + '.' + extension, fileType: file?.type }
+  deletedArray.push(deleteFile)
+  removeFiles({ deletedArray }).then(res => {
+    console.log(res);
   })
 }
 // 提交表单
 const submitAdd = async (formEl: FormInstance | undefined) => {
   if (!formEl) return
-  const images: string[] = [];
-  for (const item of formData.value.imageArray as { name: string }[]) {
-    const fileFormat = item.name.split('.');
+  const images = [] as any;
+  for (const item of formData.value.imageArray as { raw: File, name: string }[]) {
+    const file = item.raw
+    const fileFormat = file.name.split('.');
     const extension = fileFormat[fileFormat.length - 1]; // 图片后缀
-    const hash = await calculateHash(item.name); // 使用await阻塞,保证图片地址hash转换完成后之前push进数组后再结束本次循环，确保数组每项hash转换完毕在进行后续逻辑
-    images.push(hash + '.' + extension);
+    const hash = await hashFile(file); // 使用await阻塞,保证图片地址hash转换完成后之前push进数组后再结束本次循环，确保数组每项hash转换完毕在进行后续逻辑
+    const pushFile = { fileName: hash + '.' + extension, fileType: file.type }
+    images.push(pushFile);
   }
   await formEl.validate((valid, fields) => {
     if (valid) {
       formData.value.seller_id = id
-      formData.value.images = images
+      formData.value.images = JSON.stringify(images)
       formData.value.created_at = dayjs().format('YYYY-MM-DD HH:mm:ss')
 
       createProduct(formData.value).then(res => {

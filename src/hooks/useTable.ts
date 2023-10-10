@@ -30,7 +30,7 @@ export function useTable(params: any) {
         direction: sortDirection.value,
       })
       tableData.value = response.data.list
-      total.value = response.data.total
+      total.value = response.data.total || 0
     } catch (error) {
       console.error(error)
     } finally {

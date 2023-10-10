@@ -26,7 +26,7 @@ axios.interceptors.request.use(
 axios.interceptors.response.use((res: any) => {
   return new Promise((resolve, reject) => {
     if (res.data.code === 200) {
-      if (res.data.message !== '获取成功' && res.data.message !== '删除成功') {
+      if (res.data.message !== '获取成功' && res.data.message !== '删除成功' && res.data.message !== '分片上传成功') {
         ElMessage({
           message: res.data.message,
           type: 'success',
@@ -61,7 +61,7 @@ interface ResType<T> {
 interface Http {
   get<T>(url: string, params?: unknown): Promise<ResType<T>>
   post<T>(url: string, params?: unknown): Promise<ResType<T>>
-  upload<T>(url: string, params: unknown): Promise<ResType<T>>
+  upload<T>(url: string, file: unknown, body: unknown): Promise<ResType<T>>
   download(url: string): void
 }
 
@@ -88,11 +88,16 @@ const http: Http = {
       throw err.response?.data || err?.data
     }
   },
-  upload: async (url: string, file: File) => {
+  upload: async (url: string, file: File, body: any) => {
     try {
       NProgress.start()
       const formData = new FormData()
       formData.append('file', file)
+      if (body) {
+        for (let key in body) {
+          formData.append(`${key}`, body[`${key}`])
+        }
+      }
       const res = await axios.post(url, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
