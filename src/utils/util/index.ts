@@ -26,7 +26,7 @@ export const getCookie = (key: string) => {
 }
 
 /**
- * 对图片地址hash加密
+ * 对图片分片并进行hash加密
  * @param file 需要加密的图片
  * @returns 
  */
@@ -38,7 +38,7 @@ export const hashFile = (file: File) => {
     let currentChunk = 0
     var spark = new SparkMD5.ArrayBuffer();
     const reader = new FileReader()
-    const blobSlice = File.prototype.slice || File.prototype.mozSlice || File.prototype.webkitSlice; // 切片方法
+    const blobSlice = File.prototype.slice // 切片方法
     function loadNext() {
       var start = currentChunk * maxFileSize;
       var end = start + maxFileSize > file.size ? file.size : (start + maxFileSize);
