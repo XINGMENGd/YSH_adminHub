@@ -1,5 +1,5 @@
 <template>
-  <el-drawer v-model="drawer" title="商品详情" class="common-drawer">
+  <el-drawer v-model="drawer" title="商品详情" class="common-drawer" @closed="handlerCloseDrawer">
     <div class="detailItem">
       <label for="Name" class="itemLabel">商品名称:</label>
       <span>{{ productInfo.name }}</span>
@@ -27,8 +27,15 @@
     <div class="detailItem">
       <label for="ImageArray" class="itemLabel">商品图:</label>
       <div class="ItemImagesBox">
-        <el-image class="ItemImages" v-for="(item, index) in productInfo.imageArray" :src="item"
-          :preview-src-list="productInfo.imageArray" :initial-index="index" fit="cover" hide-on-click-modal />
+        <el-image class="ItemImages" v-for="(item, index) in productInfo.imageFiles" :src="item.fileName"
+          :preview-src-list="productInfo.imageFiles" :initial-index="index" fit="cover" hide-on-click-modal />
+      </div>
+    </div>
+    <div class="detailItem">
+      <label for="ImageArray" class="itemLabel">商品视频:</label>
+      <div class="productVideoBox">
+        <video class="productVideo" ref="videoRef" :src="productInfo.videoFiles[0].fileName" controls
+          @pause="videoPause"></video>
       </div>
     </div>
   </el-drawer>
@@ -45,16 +52,25 @@ const productInfo = ref({
   price: 1,
   stock: 1, // 商品库存
   category: 0, // 商品分类
-  imageArray: [] as any[],
+  imageFiles: [] as any[],
+  videoFiles: [] as any[],
   status: 0,
   seller_id: 0,
   created_at: ''
 })
-const showDrawer = (row: any) => {
+const videoRef = ref()
+function showDrawer(row: any) {
   productInfo.value = row
   drawer.value = true
+  videoPause()
+}
+function handlerCloseDrawer() {
+  videoRef.value.pause()
 }
 
+function videoPause() {
+  console.log('videoPause');
+}
 defineExpose({ showDrawer })
 </script>
 
@@ -74,5 +90,17 @@ defineExpose({ showDrawer })
       margin-top: 6px;
     }
   }
+
+  .productVideoBox {
+    width: 100%;
+    height: 30%;
+
+    .productVideo {
+      width: 100%;
+      height: 100%;
+    }
+  }
+
+
 }
 </style>

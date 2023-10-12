@@ -37,9 +37,9 @@
     :total="total" :page-sizes="[10, 30, 50]" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
 
   <addProduct ref="addDialog" :productCategoryList="productCategoryList" :productStatusList="productStatusList"
-    @callback="fetchData" />
+    @getProductList="fetchData" />
   <editProduct ref="editDialog" :productCategoryList="productCategoryList" :productStatusList="productStatusList"
-    @callback="fetchData" />
+    @getProductList="fetchData" />
   <productDetail ref="productDetailDrawer" :productCategoryList="showProductCategoryList"
     :productStatusList="showProductStatusList" />
 </template>

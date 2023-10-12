@@ -45,9 +45,7 @@ router.beforeEach(async (to, from, next) => {
 })
 
 // 定义全局方法
-app.config.globalProperties.$request = () => {
-  return http
-}
+app.config.globalProperties.$request = http
 
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
   app.component(key, component)

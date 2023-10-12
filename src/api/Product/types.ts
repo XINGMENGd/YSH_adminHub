@@ -4,7 +4,8 @@ export interface createProductParams {
     stock: number
     category: number | string
     status: number | string
-    files: Array<string>
+    imageFiles: Array<string>
+    videoFile?: Array<string>
     seller_id: string | number
     created_at?: string
 }
@@ -15,7 +16,8 @@ export interface updateProductParams {
     stock: number
     category: number | string
     status: number | string
-    files: Array<string>
+    imageFiles: Array<string>
+    videoFile?: Array<string>
     seller_id: string | number
     updated_at?: string
 }

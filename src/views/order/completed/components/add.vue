@@ -12,19 +12,29 @@
       </el-form-item>
       <el-form-item label="商品分类" prop="category" :label-width="formLabelWidth">
         <el-select v-model.number="formData.category" class="m-2" placeholder="请选择商品类型" size="default">
-          <el-option v-for="item in categoryOptions" :key="item.value" :label="item.label" :value="item.value" />
+          <el-option v-for="item in productCategoryList" :key="item.value" :label="item.label" :value="item.value" />
         </el-select>
       </el-form-item>
       <el-form-item label="商品状态" prop="status" :label-width="formLabelWidth">
         <el-select v-model.number="formData.status" class="m-2" placeholder="请选择商品状态" size="default">
-          <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value" />
+          <el-option v-for="item in productStatusList" :key="item.value" :label="item.label" :value="item.value" />
         </el-select>
       </el-form-item>
-      <el-form-item label="商品图片" prop="files" :label-width="formLabelWidth">
-        <el-upload v-model:file-list="formData.fileArray" list-type="picture-card" :before-upload="handleBeforeUpload"
-          :http-request="uploadImages" :on-preview="handlePictureCardPreview" :on-remove="handleRemove">
+      <el-form-item label="商品图片" prop="imageFileArray" :label-width="formLabelWidth">
+        <el-upload v-model:file-list="formData.imageFileArray" list-type="picture-card" accept="image/*" :limit="9"
+          :before-upload="handleBeforeUploadImage" :http-request="uploadImageFile" :on-preview="handlePictureCardPreview"
+          :on-remove="handleRemove">
           <Plus style="width: 2em; height: 2em;" />
         </el-upload>
+      </el-form-item>
+      <el-form-item label="商品视频" prop="videoFileArray" :label-width="formLabelWidth">
+        <uploadVideo v-model:file-list="formData.videoFileArray" :http-request="uploadVideoFile"
+          :before-upload="handleBeforeUploadVideo" :on-remove="handleRemove" />
+        <!-- <el-upload v-model:file-list="formData.videoFileArray" list-type="picture-card" :limit="1"
+          :before-upload="handleBeforeUploadVideo" :http-request="uploadFile" :on-preview="handlePictureCardPreview"
+          :on-remove="handleRemove">
+          <Plus style="width: 2em; height: 2em;" />
+        </el-upload> -->
       </el-form-item>
     </el-form>
     <template #footer>
@@ -34,8 +44,10 @@
       </span>
     </template>
   </el-dialog>
-  <el-dialog v-model="dialogVisible2" width="60%" top="5vh">
-    <img w-full style="object-fit: scale-down;width: 100%;height: 100%;" :src="dialogImageUrl" alt="Preview Image" />
+  <el-dialog v-model="showPreviewDialog" width="60%" top="5vh">
+    <img style="object-fit: scale-down;width: 100%;height: 100%;" :src="previewFile.fileUrl" alt="Preview Image" />
+    <!-- <video style="width: 100%;height: 100%;" v-else-if="previewFile.fileType.includes('video')" ref="videoRef"
+      :src="previewFile.fileUrl" controls @pause="videoPause"></video> -->
   </el-dialog>
 </template>
 
@@ -48,30 +60,29 @@ import { createProduct } from '@/api/Product/index'
 import { removeFiles } from '@/api/common/index'
 import { hashFile } from '@/utils/util'
 import http from '@/utils/http'
+import uploadVideo from '@/components/uploadVideo.vue'
 
-const emit = defineEmits(['callback'])
+const emit = defineEmits(['getProductList'])
 const { productCategoryList, productStatusList } = defineProps<{ productCategoryList: any, productStatusList: any }>()
-const useStore = LoginStore()
-const { id } = useStore.GET_userInfo
-const formLabelWidth = '90px'
-const formRef = ref<FormInstance>();
-const DialogVisible = ref(false)
-const dialogVisible2 = ref(false)
-const dialogImageUrl = ref('')
-const uploadArray = ref([] as any) // 已上传的文件信息
+const { id } = LoginStore().GET_userInfo
+const formLabelWidth = '90px' // 表单标签宽度
+const formRef = ref<FormInstance>(); // 表单实例
+const DialogVisible = ref(false) // 是否展示新增商品对话框
+const showPreviewDialog = ref(false) // 是否展示预览对话框
+const previewFile = ref({ fileUrl: '', fileType: '' }) // 预览文件信息
 const formData = ref({
   description: "", // 商品描述
   price: 1,
   stock: 1, // 商品库存
   category: '', // 商品分类
-  fileArray: [] as any[], // 页面展示的文件列表
-  files: [] as any, // 传给后端的文件列表
+  imageFileArray: [] as any[], // 页面展示的图片列表
+  imageFiles: [] as any, // 已上传的图片列表(传给后端)
+  videoFileArray: [] as any, // 页面展示的视频列表
+  videoFiles: [] as any, // 已上传的视频列表(传给后端)
   status: '',
-  seller_id: 0, // 挂卖人id
+  seller_id: id, // 挂卖人id
   created_at: ''
 })
-const categoryOptions = productCategoryList
-const statusOptions = productStatusList
 const rules = reactive({
   description: [
     { required: true, message: 'Please input Description', trigger: 'blur' },
@@ -83,10 +94,19 @@ const rules = reactive({
     { required: true, message: 'Stock minimum 1', trigger: 'blur' },
   ],
   category: [],
-  fileArray: [],
   status: [],
-  files: []
+  imageFileArray: [],
+  videoFileArray: []
 })
+const maxChunkFileSize = 5 * 1024 * 1024 // 最大分片上传文件大小
+const maxFileSize = 500 * 1024 * 1024 // 最大上传文件大小
+
+// 展示对话框
+function showDialog() { DialogVisible.value = true; }
+// 视频暂停播放回调
+function videoPause() {
+  console.log('videoPause');
+}
 // 重置数据
 function reset() {
   formData.value = {
@@ -94,21 +114,21 @@ function reset() {
     price: 1,
     stock: 1, // 商品库存
     category: '', // 商品分类
-    fileArray: [],
-    files: [],
+    imageFileArray: [],
+    imageFiles: [],
+    videoFileArray: [],
+    videoFiles: [],
     status: '',
     seller_id: 0,
     created_at: ''
   }
-  uploadArray.value = []
 }
-// 展示对话框
-function showDialog() { DialogVisible.value = true; }
 // 关闭对话框
 async function closeDialog(done: () => void) {
-  // 存在已上传图片，发送请求删除
-  if (formData.value.fileArray.length > 0) {
-    await removeFiles({ deletedArray: uploadArray.value }).then(res => {
+  // 存在已上传文件，发送请求删除
+  const deleteFiles = formData.value.imageFiles.concat(formData.value.videoFiles)
+  if (deleteFiles.length > 0) {
+    await removeFiles({ deleteFiles }).then(res => {
       console.log(res);
     }).catch(error => {
       console.log(error);
@@ -123,25 +143,32 @@ async function closeDialog(done: () => void) {
     DialogVisible.value = false
   }
 }
-// 上传文件之前的钩子函数
-function handleBeforeUpload(rawFile: UploadRawFile) {
-  const fileSize = rawFile.size // 文件大小
-  const MaxSize = 500 * 1024 * 1024
-  // const MaxSize = 2 * 1024 * 1024 * 1024
-  if (fileSize > MaxSize) {
-    ElMessage.error('最大上传文件大小为500MB')
+// 上传图片之前的钩子函数
+function handleBeforeUploadImage(rawFile: UploadRawFile) {
+  if (!rawFile.type.includes('image')) {
+    ElMessage.error('请选择正确的图片格式')
     return false
   }
 }
-// 自定义上传文件函数
-async function uploadImages(UploadFiles: UploadRequestOptions) {
-  const file = UploadFiles.file
+// 上传视频之前的钩子函数
+function handleBeforeUploadVideo(rawFile: UploadRawFile) {
+  return new Promise((resolve, reject) => {
+    const fileSize = rawFile.size // 文件大小
+    if (fileSize > maxFileSize) {
+      ElMessage.error('最大上传文件大小为500MB')
+      return reject(false)
+    }
+    resolve(true)
+  })
+}
+// 自定义上传图片函数
+async function uploadImageFile(UploadFile: UploadRequestOptions) {
+  const file = UploadFile.file || UploadFile
   const fileSize = file.size // 文件大小
-  const maxFileSize = 5 * 1024 * 1024 // 最大上传文件大小
   const fileFormat = file.name.split('.')
   const extension = fileFormat[fileFormat.length - 1]; // 文件后缀
   // 未超过设定上传上限，直接上传
-  if (fileSize <= maxFileSize) {
+  if (fileSize <= maxChunkFileSize) {
     const hash = await hashFile(file)
     http.upload('/uploadFile', file, {
       'name': hash + '.' + extension,
@@ -152,16 +179,16 @@ async function uploadImages(UploadFiles: UploadRequestOptions) {
       fileName: hash + '.' + extension,
       fileType: file.type
     }
-    uploadArray.value.push(uploadFile)
+    formData.value.imageFiles.push(uploadFile)
   } else {
     // 超过设定上传上限，对文件进行切片上传
     const uploadPromiseArray = [] as any // 定义Promise.all数组
-    const chunks = Math.ceil(fileSize / maxFileSize); // 获取切片的个数
+    const chunks = Math.ceil(fileSize / maxChunkFileSize); // 获取切片的个数
     const blobSlice = File.prototype.slice // 切片方法
     const hash = await hashFile(file).catch(err => { console.error(err); }) // 获取图片hash
     for (let i = 0; i < chunks; i++) {
-      const start = i * maxFileSize
-      const end = Math.min(file.size, start + maxFileSize)
+      const start = i * maxChunkFileSize
+      const end = Math.min(file.size, start + maxChunkFileSize)
       uploadPromiseArray.push(
         http.upload('/uploadChunks', blobSlice.call(file, start, end), {
           'hash': hash,
@@ -183,24 +210,87 @@ async function uploadImages(UploadFiles: UploadRequestOptions) {
         fileName: hash + '.' + extension,
         fileType: file.type
       }
-      uploadArray.value.push(uploadFile)
+      formData.value.imageFiles.push(uploadFile)
     })
   }
 }
-// 图片预览      未完成
-function handlePictureCardPreview(UploadFile: UploadFile) {
-  dialogImageUrl.value = UploadFile.url!
-  dialogVisible2.value = true
+// 自定义上传视频函数
+async function uploadVideoFile(UploadFile: File) {
+  const fileSize = UploadFile.size // 文件大小
+  const fileFormat = UploadFile.name.split('.')
+  const extension = fileFormat[fileFormat.length - 1]; // 文件后缀
+  // 未超过最大分片上传上限，直接上传
+  if (fileSize <= maxChunkFileSize) {
+    const hash = await hashFile(UploadFile)
+    http.upload('/uploadFile', UploadFile, {
+      'name': hash + '.' + extension,
+      'fileType': UploadFile.type
+    })
+    const uploadFile = {
+      originalName: UploadFile.name,
+      fileName: hash + '.' + extension,
+      fileType: UploadFile.type
+    }
+    formData.value.videoFiles.push(uploadFile)
+  } else {
+    // 超过设定上传上限，对文件进行切片上传
+    const uploadPromiseArray = [] as any // 定义Promise.all数组
+    const chunks = Math.ceil(fileSize / maxChunkFileSize); // 获取切片的个数
+    const blobSlice = File.prototype.slice // 切片方法
+    const hash = await hashFile(UploadFile).catch(err => { console.error(err); }) // 获取图片hash
+    for (let i = 0; i < chunks; i++) {
+      const start = i * maxChunkFileSize
+      const end = Math.min(UploadFile.size, start + maxChunkFileSize)
+      uploadPromiseArray.push(
+        http.upload('/uploadChunks', blobSlice.call(UploadFile, start, end), {
+          'hash': hash,
+          'index': i,
+          'fileType': UploadFile.type
+        })
+      )
+    }
+    // 等待所有分片上传完毕发送合并分片请求
+    Promise.all(uploadPromiseArray).then(res => {
+      http.post('/mergeChunks', {
+        'name': hash + '.' + extension,
+        'hash': hash,
+        'total': chunks,
+        'fileType': UploadFile.type
+      })
+      const uploadFile = {
+        originalName: UploadFile.name,
+        fileName: hash + '.' + extension,
+        fileType: UploadFile.type
+      }
+      formData.value.videoFiles.push(uploadFile)
+    })
+  }
 }
-// 点击删除图片 
-async function handleRemove(UploadFile: UploadFile | { raw: any; }) {
+// 图片预览
+function handlePictureCardPreview(UploadFile: UploadFile | { raw: any; url: string }) {
   const file = UploadFile.raw
-  // 获取当前点击删除的图片信息
-  const deletedArray = uploadArray.value.filter((fileInfo: any) => fileInfo.originalName == file.name)
-  // 将点击删除后新的上传文件数组数据更新
-  uploadArray.value = uploadArray.value.filter((fileInfo: any) => fileInfo.originalName !== file.name)
-  removeFiles({ deletedArray }).then(res => {
-    console.log(res);
+  previewFile.value.fileUrl = UploadFile.url!
+  previewFile.value.fileType = file.type
+  showPreviewDialog.value = true
+}
+// 点击删除文件
+async function handleRemove(UploadFile: UploadFile | { raw: any; }) {
+  const file = UploadFile.raw || UploadFile
+  const fileType = file.type
+  let deleteFiles = []
+
+  if (fileType.includes('image')) {
+    // 获取当前点击删除的图片信息
+    deleteFiles = formData.value.imageFiles.filter((fileInfo: any) => fileInfo.originalName == file.name)
+    // 将点击删除后新的上传文件数组数据更新
+    formData.value.imageFiles = formData.value.imageFiles.filter((fileInfo: any) => fileInfo.originalName !== file.name)
+  } else if (fileType.includes('video')) {
+    deleteFiles = formData.value.videoFiles.filter((fileInfo: any) => fileInfo.originalName == file.name)
+    // 将点击删除后新的上传文件数组数据更新
+    formData.value.videoFiles = formData.value.videoFiles.filter((fileInfo: any) => fileInfo.originalName !== file.name)
+  }
+  removeFiles({ deleteFiles }).then(res => {
+    formData.value.videoFileArray = formData.value.videoFiles
   })
 }
 // 提交表单
@@ -208,18 +298,11 @@ async function submitAdd(formEl: FormInstance | undefined) {
   if (!formEl) return
   await formEl.validate((valid, fields) => {
     if (valid) {
-      const files = uploadArray.value.map((file: any) => {
-        const { originalName, ...rest } = file;
-        return rest
-      })
-      formData.value.seller_id = id
-      formData.value.files = JSON.stringify(files)
       formData.value.created_at = dayjs().format('YYYY-MM-DD HH:mm:ss')
-
       createProduct(formData.value).then(res => {
         DialogVisible.value = false
         reset()
-        emit('callback')
+        emit('getProductList')
       }).catch(error => {
         console.log(error);
       })

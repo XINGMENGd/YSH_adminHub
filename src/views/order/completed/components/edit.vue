@@ -20,9 +20,17 @@
           <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value" />
         </el-select>
       </el-form-item>
-      <el-form-item label="商品图片" prop="files" :label-width="formLabelWidth">
-        <el-upload v-model:file-list="formData.fileArray" list-type="picture-card" :before-upload="handleBeforeUpload"
-          :http-request="uploadImages" :on-preview="handlePictureCardPreview" :on-remove="handleRemove">
+      <el-form-item label="商品图片" prop="imageFileArray" :label-width="formLabelWidth">
+        <el-upload v-model:file-list="formData.imageFileArray" list-type="picture-card" :limit="9"
+          :before-upload="handleBeforeUploadImage" :http-request="uploadFile" :on-preview="handlePictureCardPreview"
+          :on-remove="handleRemove">
+          <Plus style="width: 2em; height: 2em;" />
+        </el-upload>
+      </el-form-item>
+      <el-form-item label="商品视频" prop="videoFileArray" :label-width="formLabelWidth">
+        <el-upload v-model:file-list="formData.videoFileArray" list-type="picture-card" :limit="1"
+          :before-upload="handleBeforeUploadVideo" :http-request="uploadFile" :on-preview="handlePictureCardPreview"
+          :on-remove="handleRemove">
           <Plus style="width: 2em; height: 2em;" />
         </el-upload>
       </el-form-item>
@@ -49,7 +57,7 @@ import { removeFiles } from '@/api/common/index'
 import { hashFile } from '@/utils/util'
 import http from '@/utils/http'
 
-const emit = defineEmits(['callback'])
+const emit = defineEmits(['getProductList'])
 const { productCategoryList, productStatusList } = defineProps<{ productCategoryList: any, productStatusList: any }>()
 const useStore = LoginStore()
 const { id } = useStore.GET_userInfo
@@ -59,16 +67,20 @@ const DialogVisible = ref(false)
 const dialogVisible2 = ref(false)
 const dialogImageUrl = ref('')
 const reg = /\/uploads\/(images|videos)\/(.+)/
-const uploadArray = ref([] as any) // 已上传的文件信息
-const oldFiles = ref<string[]>([]);
+const oldImageFiles = ref<string[]>([]); // 存储原始旧图片列表信息
+const oldVideoFiles = ref<string[]>([]); // 存储原始旧视频列表信息
+const uploadedImages = ref([] as any) // 存储当前上传的图片列表信息
+const uploadedVideos = ref([] as any) // 存储当前上传的视频列表信息
 const formData = ref({
   description: "", // 商品描述
   price: 0,
   stock: 0, // 商品库存
   category: '', // 商品分类
   status: '',
-  fileArray: [] as any[], // 页面展示的文件列表
-  files: [] as any, // 传给后端的文件列表
+  imageFileArray: [] as any[], // 页面展示的图片列表
+  imageFiles: [] as any, // 传给后端的图片列表
+  videoFileArray: [] as any[], // 页面展示的视频列表
+  videoFiles: [] as any, // 传给后端的视频列表
   seller_id: 0, // 挂卖人id
   updated_at: ''
 })
@@ -85,9 +97,9 @@ const rules = reactive({
     { required: true, message: 'Stock minimum 1', trigger: 'blur' },
   ],
   category: [],
-  fileArray: [],
   status: [],
-  files: []
+  imageFileArray: [],
+  videoFileArray: []
 })
 // 重置数据
 function reset() {
@@ -96,26 +108,54 @@ function reset() {
     price: 0,
     stock: 0, // 商品库存
     category: '', // 商品分类
+    imageFileArray: [],
+    imageFiles: [],
+    videoFileArray: [],
+    videoFiles: [],
     status: '',
-    fileArray: [],
-    files: [],
     seller_id: 0,
     updated_at: ''
   }
-  uploadArray.value = []
+  uploadedImages.value = []
+  uploadedVideos.value = []
 }
 // 展示对话框,回显数据
 function showDialog(productInfo: any) {
   DialogVisible.value = true
-  const { files: fileArray, ...formDataInfo } = productInfo
-  oldFiles.value = fileArray
-  uploadArray.value = fileArray.map((file: any) => ({
+  const { imageFiles, videoFiles, ...formDataInfo } = productInfo
+  // 无法使用一个变量接收下面重复出现逻辑，因为map是返回一个新数组，而使用一个变量接收则会使旧上传文件与现上传文件共用一个内存地址
+  // 解决方法，深拷贝后赋值(后续处理)
+  // 映射，记录原始旧图片列表信息
+  oldImageFiles.value = imageFiles.map((file: any) => ({
+    originalName: file.fileName.match(reg)[2],
+    fileName: file.fileName.match(reg)[2],
+    fileType: file.fileType
+  }))
+  // 映射，记录原始旧视频列表信息
+  oldVideoFiles.value = videoFiles.map((file: any) => ({
+    originalName: file.fileName.match(reg)[2],
+    fileName: file.fileName.match(reg)[2],
+    fileType: file.fileType
+  }))
+  // 映射，存储当前上传的图片列表信息
+  uploadedImages.value = imageFiles.map((file: any) => ({
+    originalName: file.fileName.match(reg)[2],
+    fileName: file.fileName.match(reg)[2],
+    fileType: file.fileType
+  }))
+  // 映射，存储当前上传的视频列表信息
+  uploadedVideos.value = videoFiles.map((file: any) => ({
     originalName: file.fileName.match(reg)[2],
     fileName: file.fileName.match(reg)[2],
     fileType: file.fileType
   }))
   // 对传递的图片数组加工回显页面
-  formDataInfo.fileArray = fileArray.map((file: any) => ({
+  formDataInfo.imageFileArray = imageFiles.map((file: any) => ({
+    name: file.fileName,
+    url: file.fileName,
+    fileType: file.fileType
+  }))
+  formDataInfo.videoFileArray = videoFiles.map((file: any) => ({
     name: file.fileName,
     url: file.fileName,
     fileType: file.fileType
@@ -131,8 +171,19 @@ async function closeDialog(done: () => void) {
     DialogVisible.value = false
   }
 }
-// 上传文件之前的钩子函数
-function handleBeforeUpload(rawFile: UploadRawFile) {
+// 上传图片之前的钩子函数
+function handleBeforeUploadImage(rawFile: UploadRawFile) {
+  if (!rawFile.type.includes('image')) {
+    ElMessage.error('请选择正确的图片格式')
+    return false
+  }
+}
+// 上传视频之前的钩子函数
+function handleBeforeUploadVideo(rawFile: UploadRawFile) {
+  if (!rawFile.type.includes('video')) {
+    ElMessage.error('请选择正确的视频格式')
+    return false
+  }
   const fileSize = rawFile.size // 文件大小
   const MaxSize = 500 * 1024 * 1024
   // const MaxSize = 2 * 1024 * 1024 * 1024
@@ -141,8 +192,8 @@ function handleBeforeUpload(rawFile: UploadRawFile) {
     return false
   }
 }
-// 自定义上传图片函数
-async function uploadImages(UploadFiles: UploadRequestOptions) {
+// 自定义上传文件函数
+async function uploadFile(UploadFiles: UploadRequestOptions) {
   const file = UploadFiles.file
   const fileSize = file.size // 文件大小
   const maxFileSize = 5 * 1024 * 1024 // 最大上传文件大小
@@ -160,7 +211,11 @@ async function uploadImages(UploadFiles: UploadRequestOptions) {
       fileName: hash + '.' + extension,
       fileType: file.type
     }
-    uploadArray.value.push(uploadFile)
+    if (file.type.includes('image')) {
+      uploadedImages.value.push(uploadFile)
+    } else if (file.type.includes('video')) {
+      uploadedVideos.value.push(uploadFile)
+    }
   } else {
     // 超过设定上传上限，对文件进行切片上传
     const uploadPromiseArray = [] as any // 定义Promise.all数组
@@ -191,11 +246,15 @@ async function uploadImages(UploadFiles: UploadRequestOptions) {
         fileName: hash + '.' + extension,
         fileType: file.type
       }
-      uploadArray.value.push(uploadFile)
+      if (file.type.includes('image')) {
+        uploadedImages.value.push(uploadFile)
+      } else if (file.type.includes('video')) {
+        uploadedVideos.value.push(uploadFile)
+      }
     })
   }
 }
-// 图片预览
+// 图片预览      未完成
 function handlePictureCardPreview(UploadFile: UploadFile) {
   dialogImageUrl.value = UploadFile.url!
   dialogVisible2.value = true
@@ -203,27 +262,34 @@ function handlePictureCardPreview(UploadFile: UploadFile) {
 // 点击删除图片
 async function handleRemove(UploadFile: UploadFile | { raw: any; }) {
   const file = UploadFile.raw || UploadFile
+  const fileType = file.type || file.fileType
   let fileName = ''
-  // 将点击删除后新的上传文件数组数据更新
-  if (file.name.match(reg)) {
-    fileName = file.name.match(reg)[2]
-  } else {
-    fileName = file.name
+  if (fileType.includes('image')) {
+    // 将点击删除后新的上传文件数组数据更新
+    if (file.name.match(reg)) {
+      fileName = file.name.match(reg)[2]
+    } else {
+      fileName = file.name
+    }
+    uploadedImages.value = uploadedImages.value.filter((fileInfo: any) => fileInfo.originalName !== fileName)
+  } else if (fileType.includes('video')) {
+    if (file.name.match(reg)) {
+      fileName = file.name.match(reg)[2]
+    } else {
+      fileName = file.name
+    }
+    uploadedVideos.value = uploadedVideos.value.filter((fileInfo: any) => fileInfo.originalName !== fileName)
   }
-  uploadArray.value = uploadArray.value.filter((fileInfo: any) => fileInfo.originalName !== fileName)
 }
 // 提交表单
 async function submitEmit(formEl: FormInstance | undefined) {
   if (!formEl) return
-  const deletedArray = oldFiles.value
-    .map((item: any) => {
-      const matchResult = item.fileName.match(reg);
-      return matchResult ? { fileName: matchResult[2], fileType: item.fileType } : null; // 从匹配结果中提取文件名，若匹配失败则返回null
-    })
-    .filter((file: any | null) => file && !uploadArray.value.some((obj: any) => obj.fileName === file.fileName));
+  const oldFiles = oldImageFiles.value.concat(oldVideoFiles.value)
+  const newFiles = uploadedImages.value.concat(uploadedVideos.value)
+  const deleteFiles = oldFiles.filter((file: any | null) => file && !newFiles.some((obj: any) => obj.fileName === file.fileName))
   // 发现新上传的图片列表中有删除旧图片，发送请求给后端删除旧图
-  if (deletedArray.length > 0) {
-    await removeFiles({ deletedArray }).then(res => {
+  if (deleteFiles.length > 0) {
+    await removeFiles({ deleteFiles }).then(res => {
       console.log(res);
     }).catch(error => {
       console.log(error);
@@ -231,17 +297,22 @@ async function submitEmit(formEl: FormInstance | undefined) {
   }
   await formEl.validate((valid, fields) => {
     if (valid) {
-      const files = uploadArray.value.map((file: any) => {
+      const imageFiles = uploadedImages.value.map((file: any) => {
+        const { originalName, ...rest } = file;
+        return rest
+      })
+      const videoFiles = uploadedVideos.value.map((file: any) => {
         const { originalName, ...rest } = file;
         return rest
       })
       formData.value.seller_id = id
-      formData.value.files = JSON.stringify(files)
+      formData.value.imageFiles = JSON.stringify(imageFiles)
+      formData.value.videoFiles = JSON.stringify(videoFiles)
       formData.value.updated_at = dayjs().format('YYYY-MM-DD HH:mm:ss')
       updateProduct(formData.value).then(res => {
         DialogVisible.value = false
         reset()
-        emit('callback')
+        emit('getProductList')
       }).catch(error => {
         console.log(error);
       })
