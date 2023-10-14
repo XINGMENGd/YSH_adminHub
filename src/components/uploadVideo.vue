@@ -1,49 +1,65 @@
 <template>
-  <input type="file" ref="uploadInputRef" accept="video/*" @change="changeFiles">
-  <div class="uploadVideoBox" v-if="uploadVideoFiles.length == 0" @click="handleChangeFiles">
+  <input type="file" ref="inputRef" v-if="!isUpload" accept="video/*" class="hideInput" @change="changeFiles">
+  <div class="uploadVideoBox" v-if="videoFiles.length == 0" @click="handleChangeFiles">
     <Plus class="uploadVideoIcon" />
   </div>
-  <div class="videoBox" v-else>
-    <Close class="icon-close" @click="onRemove(uploadVideoFiles)" />
-    <video style="width: 100%;height: 100%;" ref="videoRef" controls></video>
+  <div class="videoBox" v-else v-for="(item, index) in videoFiles" :key="index">
+    <Close class="icon-close" @click="onRemove(item)" />
+    <video style="width: 100%;height: 100%;" ref="videoRef" controls :src="mapVideoUrl(item)"></video>
+  </div>
+  <div class="uploadVideoBox" v-if="videoFiles.length > 0 && videoFiles.length != limit" @click="handleChangeFiles">
+    <Plus class="uploadVideoIcon" />
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref, nextTick, computed } from 'vue'
+import { ref, onMounted, computed, nextTick } from 'vue'
 
+
+interface uploadOptions {
+  fileList: String
+  limit: Number
+  httpRequest: Function
+  beforeUpload: Function
+  onRemove: Function
+}
+const props = defineProps<uploadOptions>()
 const emit = defineEmits(['update:fileList'])
-const props = defineProps<{ fileList: any, httpRequest: Function, beforeUpload: Function, onRemove: Function }>()
-const uploadInputRef = ref() // 上传input实例
+const limit = ref(props.limit) // 最大上传上限
+const inputRef = ref() // 上传input实例
 const videoRef = ref() // 视频容器实例
-const uploadVideoFiles = computed({
+const isUpload = ref(false) // 是否上传过文件 -- 上传过文件后切换清除input实例，在下次点击上传时重新创建以实现input不能选择重复视频文件问题
+const videoFiles = computed({
   get: () => props.fileList,
   set: (value) => emit('update:fileList', value)
 })
-nextTick(() => { uploadInputRef.value.className = 'hideInput' })
-// 点击触发input弹出文件选择器
-function handleChangeFiles() { uploadInputRef.value.click() }
-async function changeFiles() {
-  const files = uploadInputRef.value.files // 获取选中文件信息
-  // const flag = await props.beforeUpload(files[0])
-  uploadVideoFiles.value = files[0]
-  props.httpRequest(files[0])
-  // if (flag) {
-  //   emit('uploadFile', files[0], (err: any, file: any, uploadFile: any) => {
-  //     console.log(file);
 
-  //     const reader = new FileReader()
-  //     reader.readAsDataURL(file)
-  //     reader.onloadend = function (e) {
-  //       uploadVideo.value = uploadFile
-  //       nextTick(() => {
-  //         const result = e.target?.result
-  //         videoRef.value.src = result
-  //       })
-  //     }
-  //   })
-  // }
+// 点击触发input弹出文件选择器
+function handleChangeFiles() {
+  isUpload.value = false;
+  nextTick(() => {
+    inputRef.value.click()
+  })
 }
+// 选中上传视频文件
+async function changeFiles() {
+  const files = inputRef.value.files // 获取选中文件信息
+  try {
+    if (props.fileList.length == limit.value) { console.error('上传视频量到达上限'); return }
+    const file = files[0]
+    await props.beforeUpload(file)
+    await props?.httpRequest(file)
+    const newVideoFiles = props.fileList.concat(file)
+    videoFiles.value = newVideoFiles
+    isUpload.value = true
+  } catch (error) {
+    console.error(error);
+  }
+}
+function mapVideoUrl(file: any) {
+  return URL.createObjectURL(file)
+}
+
 </script>
 
 <style lang="less" scoped>
@@ -56,8 +72,8 @@ async function changeFiles() {
 
 .videoBox {
   position: relative;
-  width: 100%;
-  height: 160px;
+  width: 310px;
+  height: 170px;
 
   .icon-close {
     position: absolute;
@@ -77,8 +93,8 @@ async function changeFiles() {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 148px;
-  height: 148px;
+  width: 310px;
+  height: 170px;
   background-color: #fafafa;
   border: 0.8px dashed #cdd0d6;
   border-radius: 8px;

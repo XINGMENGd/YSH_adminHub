@@ -33,6 +33,7 @@ declare module '@vue/runtime-core' {
     ElUpload: typeof import('element-plus/es')['ElUpload']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    UploadContent: typeof import('./src/components/uploadVideo/upload-content.vue')['default']
     UploadVideo: typeof import('./src/components/uploadVideo.vue')['default']
   }
 }

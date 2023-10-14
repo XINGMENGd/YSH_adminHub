@@ -28,13 +28,8 @@
         </el-upload>
       </el-form-item>
       <el-form-item label="商品视频" prop="videoFileArray" :label-width="formLabelWidth">
-        <uploadVideo v-model:file-list="formData.videoFileArray" :http-request="uploadVideoFile"
+        <uploadVideo v-model:file-list="formData.videoFileArray" :limit="1" :http-request="uploadVideoFile"
           :before-upload="handleBeforeUploadVideo" :on-remove="handleRemove" />
-        <!-- <el-upload v-model:file-list="formData.videoFileArray" list-type="picture-card" :limit="1"
-          :before-upload="handleBeforeUploadVideo" :http-request="uploadFile" :on-preview="handlePictureCardPreview"
-          :on-remove="handleRemove">
-          <Plus style="width: 2em; height: 2em;" />
-        </el-upload> -->
       </el-form-item>
     </el-form>
     <template #footer>
@@ -46,8 +41,6 @@
   </el-dialog>
   <el-dialog v-model="showPreviewDialog" width="60%" top="5vh">
     <img style="object-fit: scale-down;width: 100%;height: 100%;" :src="previewFile.fileUrl" alt="Preview Image" />
-    <!-- <video style="width: 100%;height: 100%;" v-else-if="previewFile.fileType.includes('video')" ref="videoRef"
-      :src="previewFile.fileUrl" controls @pause="videoPause"></video> -->
   </el-dialog>
 </template>
 
@@ -75,11 +68,11 @@ const formData = ref({
   price: 1,
   stock: 1, // 商品库存
   category: '', // 商品分类
+  status: '',
   imageFileArray: [] as any[], // 页面展示的图片列表
   imageFiles: [] as any, // 已上传的图片列表(传给后端)
   videoFileArray: [] as any, // 页面展示的视频列表
   videoFiles: [] as any, // 已上传的视频列表(传给后端)
-  status: '',
   seller_id: id, // 挂卖人id
   created_at: ''
 })
@@ -114,12 +107,12 @@ function reset() {
     price: 1,
     stock: 1, // 商品库存
     category: '', // 商品分类
+    status: '',
     imageFileArray: [],
     imageFiles: [],
     videoFileArray: [],
     videoFiles: [],
-    status: '',
-    seller_id: 0,
+    seller_id: id,
     created_at: ''
   }
 }
@@ -156,9 +149,10 @@ function handleBeforeUploadVideo(rawFile: UploadRawFile) {
     const fileSize = rawFile.size // 文件大小
     if (fileSize > maxFileSize) {
       ElMessage.error('最大上传文件大小为500MB')
-      return reject(false)
+      reject('最大上传文件大小为500MB')
+    } else {
+      resolve(true)
     }
-    resolve(true)
   })
 }
 // 自定义上传图片函数
@@ -276,7 +270,7 @@ function handlePictureCardPreview(UploadFile: UploadFile | { raw: any; url: stri
 // 点击删除文件
 async function handleRemove(UploadFile: UploadFile | { raw: any; }) {
   const file = UploadFile.raw || UploadFile
-  const fileType = file.type
+  const fileType = file.type || file.fileType
   let deleteFiles = []
 
   if (fileType.includes('image')) {
@@ -290,7 +284,8 @@ async function handleRemove(UploadFile: UploadFile | { raw: any; }) {
     formData.value.videoFiles = formData.value.videoFiles.filter((fileInfo: any) => fileInfo.originalName !== file.name)
   }
   removeFiles({ deleteFiles }).then(res => {
-    formData.value.videoFileArray = formData.value.videoFiles
+    const videoFileArray = formData.value.videoFileArray.filter((fileInfo: any) => fileInfo.name !== file.name)
+    formData.value.videoFileArray = videoFileArray   // 由于双向绑定原因导致videoFileArray和组件数据绑定，而videoFiles作为数据数组，在上传完视频后会存储数据进去，现在删除时却是拿这个进行对于后赋值给videoFileArray回显页面，导致数据绑定混乱
   })
 }
 // 提交表单
