@@ -1,20 +1,21 @@
 <template>
   <input type="file" ref="inputRef" v-if="!isUpload" accept="video/*" class="hideInput" @change="changeFiles">
-  <div class="uploadVideoBox" v-if="videoFiles.length == 0" @click="handleChangeFiles">
-    <Plus class="uploadVideoIcon" />
-  </div>
-  <div class="videoBox" v-else v-for="(item, index) in videoFiles" :key="index">
+  <div class="videoBox" v-if="videoFiles.length > 0 && videoFiles.length < limit" v-for="(item, index) in videoFiles"
+    :key="item.name">
     <Close class="icon-close" @click="onRemove(item)" />
     <video style="width: 100%;height: 100%;" ref="videoRef" controls :src="mapVideoUrl(item)"></video>
   </div>
-  <div class="uploadVideoBox" v-if="videoFiles.length > 0 && videoFiles.length != limit" @click="handleChangeFiles">
+  <div class="videoBox" v-else v-for="(item, index) in (videoFiles.slice(0, limit))" :key="index">
+    <Close class="icon-close" @click="onRemove(item)" />
+    <video style="width: 100%;height: 100%;" ref="videoRef" controls :src="mapVideoUrl(item)"></video>
+  </div>
+  <div class="uploadVideoBox" v-if="videoFiles.length < limit" @click="handleChangeFiles">
     <Plus class="uploadVideoIcon" />
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, computed, nextTick } from 'vue'
-
+import { ref, computed, nextTick } from 'vue'
 
 interface uploadOptions {
   fileList: String
@@ -32,21 +33,18 @@ const isUpload = ref(false) // 是否上传过文件 -- 上传过文件后切换
 const videoFiles = computed({
   get: () => props.fileList,
   set: (value) => emit('update:fileList', value)
-})
+}) as any
 
 // 点击触发input弹出文件选择器
 function handleChangeFiles() {
   isUpload.value = false;
-  nextTick(() => {
-    inputRef.value.click()
-  })
+  nextTick(() => inputRef.value.click())
 }
 // 选中上传视频文件
 async function changeFiles() {
-  const files = inputRef.value.files // 获取选中文件信息
+  if (props.fileList.length as any >= limit.value) { console.error('上传视频量到达上限'); return }
+  const file = inputRef.value.files[0] // 获取选中文件信息
   try {
-    if (props.fileList.length == limit.value) { console.error('上传视频量到达上限'); return }
-    const file = files[0]
     await props.beforeUpload(file)
     await props?.httpRequest(file)
     const newVideoFiles = props.fileList.concat(file)
@@ -56,8 +54,13 @@ async function changeFiles() {
     console.error(error);
   }
 }
+// 将文件信息转换成video播放地址
 function mapVideoUrl(file: any) {
-  return URL.createObjectURL(file)
+  if (Object.prototype.toString.call(file).includes('File')) {
+    return URL.createObjectURL(file)
+  } else {
+    return file.url
+  }
 }
 
 </script>

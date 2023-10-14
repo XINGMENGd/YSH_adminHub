@@ -40,7 +40,7 @@
     </template>
   </el-dialog>
   <el-dialog v-model="showPreviewDialog" width="60%" top="5vh">
-    <img style="object-fit: scale-down;width: 100%;height: 100%;" :src="previewFile.fileUrl" alt="Preview Image" />
+    <img style="object-fit: scale-down;width: 100%;height: 100%;" :src="previewFile" alt="Preview Image" />
   </el-dialog>
 </template>
 
@@ -62,7 +62,7 @@ const formLabelWidth = '90px' // 表单标签宽度
 const formRef = ref<FormInstance>(); // 表单实例
 const DialogVisible = ref(false) // 是否展示新增商品对话框
 const showPreviewDialog = ref(false) // 是否展示预览对话框
-const previewFile = ref({ fileUrl: '', fileType: '' }) // 预览文件信息
+const previewFile = ref('') // 预览文件信息
 const formData = ref({
   description: "", // 商品描述
   price: 1,
@@ -96,10 +96,6 @@ const maxFileSize = 500 * 1024 * 1024 // 最大上传文件大小
 
 // 展示对话框
 function showDialog() { DialogVisible.value = true; }
-// 视频暂停播放回调
-function videoPause() {
-  console.log('videoPause');
-}
 // 重置数据
 function reset() {
   formData.value = {
@@ -166,12 +162,12 @@ async function uploadImageFile(UploadFile: UploadRequestOptions) {
     const hash = await hashFile(file)
     http.upload('/uploadFile', file, {
       'name': hash + '.' + extension,
-      'fileType': file.type
+      'type': file.type
     })
     const uploadFile = {
       originalName: file.name,
-      fileName: hash + '.' + extension,
-      fileType: file.type
+      name: hash + '.' + extension,
+      type: file.type
     }
     formData.value.imageFiles.push(uploadFile)
   } else {
@@ -187,7 +183,7 @@ async function uploadImageFile(UploadFile: UploadRequestOptions) {
         http.upload('/uploadChunks', blobSlice.call(file, start, end), {
           'hash': hash,
           'index': i,
-          'fileType': file.type
+          'type': file.type
         })
       )
     }
@@ -197,12 +193,12 @@ async function uploadImageFile(UploadFile: UploadRequestOptions) {
         'name': hash + '.' + extension,
         'hash': hash,
         'total': chunks,
-        'fileType': file.type
+        'type': file.type
       })
       const uploadFile = {
         originalName: file.name,
-        fileName: hash + '.' + extension,
-        fileType: file.type
+        name: hash + '.' + extension,
+        type: file.type
       }
       formData.value.imageFiles.push(uploadFile)
     })
@@ -218,12 +214,12 @@ async function uploadVideoFile(UploadFile: File) {
     const hash = await hashFile(UploadFile)
     http.upload('/uploadFile', UploadFile, {
       'name': hash + '.' + extension,
-      'fileType': UploadFile.type
+      'type': UploadFile.type
     })
     const uploadFile = {
       originalName: UploadFile.name,
-      fileName: hash + '.' + extension,
-      fileType: UploadFile.type
+      name: hash + '.' + extension,
+      type: UploadFile.type
     }
     formData.value.videoFiles.push(uploadFile)
   } else {
@@ -239,7 +235,7 @@ async function uploadVideoFile(UploadFile: File) {
         http.upload('/uploadChunks', blobSlice.call(UploadFile, start, end), {
           'hash': hash,
           'index': i,
-          'fileType': UploadFile.type
+          'type': UploadFile.type
         })
       )
     }
@@ -249,12 +245,12 @@ async function uploadVideoFile(UploadFile: File) {
         'name': hash + '.' + extension,
         'hash': hash,
         'total': chunks,
-        'fileType': UploadFile.type
+        'type': UploadFile.type
       })
       const uploadFile = {
         originalName: UploadFile.name,
-        fileName: hash + '.' + extension,
-        fileType: UploadFile.type
+        name: hash + '.' + extension,
+        type: UploadFile.type
       }
       formData.value.videoFiles.push(uploadFile)
     })
@@ -262,15 +258,13 @@ async function uploadVideoFile(UploadFile: File) {
 }
 // 图片预览
 function handlePictureCardPreview(UploadFile: UploadFile | { raw: any; url: string }) {
-  const file = UploadFile.raw
-  previewFile.value.fileUrl = UploadFile.url!
-  previewFile.value.fileType = file.type
+  previewFile.value = UploadFile.url!
   showPreviewDialog.value = true
 }
 // 点击删除文件
 async function handleRemove(UploadFile: UploadFile | { raw: any; }) {
   const file = UploadFile.raw || UploadFile
-  const fileType = file.type || file.fileType
+  const fileType = file.type
   let deleteFiles = []
 
   if (fileType.includes('image')) {
@@ -285,7 +279,7 @@ async function handleRemove(UploadFile: UploadFile | { raw: any; }) {
   }
   removeFiles({ deleteFiles }).then(res => {
     const videoFileArray = formData.value.videoFileArray.filter((fileInfo: any) => fileInfo.name !== file.name)
-    formData.value.videoFileArray = videoFileArray   // 由于双向绑定原因导致videoFileArray和组件数据绑定，而videoFiles作为数据数组，在上传完视频后会存储数据进去，现在删除时却是拿这个进行对于后赋值给videoFileArray回显页面，导致数据绑定混乱
+    formData.value.videoFileArray = videoFileArray
   })
 }
 // 提交表单

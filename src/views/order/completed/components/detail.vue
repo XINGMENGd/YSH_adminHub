@@ -27,14 +27,14 @@
     <div class="detailItem">
       <label for="ImageArray" class="itemLabel">商品图:</label>
       <div class="ItemImagesBox">
-        <el-image class="ItemImages" v-for="(item, index) in productInfo.imageFiles" :src="item.fileName"
-          :preview-src-list="productInfo.imageFiles" :initial-index="index" fit="cover" hide-on-click-modal />
+        <el-image class="ItemImages" v-for="(item, index) in productInfo.imageFiles" :src="item.name"
+          :preview-src-list="previewList" :initial-index="index" fit="scale-down" hide-on-click-modal />
       </div>
     </div>
-    <div class="detailItem">
+    <div class="detailItem" v-if="productInfo.videoFiles.length > 0">
       <label for="ImageArray" class="itemLabel">商品视频:</label>
       <div class="productVideoBox">
-        <video class="productVideo" ref="videoRef" :src="productInfo.videoFiles[0].fileName" controls
+        <video class="productVideo" ref="videoRef" :src="productInfo.videoFiles[0]?.name" controls
           @pause="videoPause"></video>
       </div>
     </div>
@@ -42,7 +42,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 
 const { productCategoryList, productStatusList } = defineProps<{ productCategoryList: any, productStatusList: any }>()
 const drawer = ref(false)
@@ -58,14 +58,22 @@ const productInfo = ref({
   seller_id: 0,
   created_at: ''
 })
-const videoRef = ref()
+const previewList = computed(() => {
+  return productInfo.value.imageFiles.map(item => {
+    return item.name
+  })
+})
+const videoRef = ref() // 视频播放容器实例
 function showDrawer(row: any) {
   productInfo.value = row
   drawer.value = true
-  videoPause()
 }
 function handlerCloseDrawer() {
-  videoRef.value.pause()
+  try {
+    videoRef.value.pause()
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 function videoPause() {
