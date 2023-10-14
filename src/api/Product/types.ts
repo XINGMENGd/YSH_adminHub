@@ -1,23 +1,23 @@
 export interface createProductParams {
-    name: string
     description: string
     price: number
     stock: number
     category: number | string
     status: number | string
-    imageArray: Array<string>
-    sellerId: number
+    imageFiles: Array<string>
+    videoFile?: Array<string>
+    seller_id: string | number
     created_at?: string
 }
 
 export interface updateProductParams {
-    name: string
     description: string
     price: number
     stock: number
     category: number | string
     status: number | string
-    imageArray: Array<string>
-    sellerId: number
+    imageFiles: Array<string>
+    videoFile?: Array<string>
+    seller_id: string | number
     updated_at?: string
 }

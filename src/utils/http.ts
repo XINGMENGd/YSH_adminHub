@@ -1,6 +1,6 @@
 import axios from 'axios'
 import NProgress from 'nprogress'
-import LoginStore from '@/stores/login'
+import LoginStore from '@/stores/Auth'
 
 // 设置请求头和请求路径
 axios.defaults.baseURL = import.meta.env.VITE_BASE_API_URL
@@ -8,11 +8,11 @@ axios.defaults.timeout = 1000 * 20
 axios.defaults.headers.post['Content-Type'] = 'application/json;charset=UTF-8'
 axios.interceptors.request.use(
   (config) => {
-    
     const useStore = LoginStore()
-    const { token } = useStore.GET_userInfo
+    const { id, token } = useStore.GET_userInfo
 
     if (token !== '') {
+      config.headers['User-Identifier'] = id
       config.headers.Authorization = token
     }
     return config
@@ -26,7 +26,7 @@ axios.interceptors.request.use(
 axios.interceptors.response.use((res: any) => {
   return new Promise((resolve, reject) => {
     if (res.data.code === 200) {
-      if (res.data.message !== '获取成功' && res.data.message !== '删除成功') {
+      if (res.data.message !== '获取成功' && res.data.message !== '删除成功' && res.data.message !== '分片上传成功') {
         ElMessage({
           message: res.data.message,
           type: 'success',
@@ -35,6 +35,11 @@ axios.interceptors.response.use((res: any) => {
       }
       return resolve(res)
     } else {
+      if (res.data.code === 401) {
+        const useStore = LoginStore()
+        useStore.LOGOUT()
+        return
+      }
       if (res.data.message !== '图片不存在') {
         ElMessage.error({
           message: res.data.message,
@@ -44,10 +49,6 @@ axios.interceptors.response.use((res: any) => {
       }
       return reject(res)
     }
-    // if (res.data.code === 111) {
-    //   localStorage.setItem('token', '')
-    //   // token过期操作
-    // }
   })
 })
 
@@ -60,7 +61,7 @@ interface ResType<T> {
 interface Http {
   get<T>(url: string, params?: unknown): Promise<ResType<T>>
   post<T>(url: string, params?: unknown): Promise<ResType<T>>
-  upload<T>(url: string, params: unknown): Promise<ResType<T>>
+  upload<T>(url: string, file: unknown, body: unknown): Promise<ResType<T>>
   download(url: string): void
 }
 
@@ -87,11 +88,16 @@ const http: Http = {
       throw err.response?.data || err?.data
     }
   },
-  upload: async (url: string, file: File) => {
+  upload: async (url: string, file: File, body: any) => {
     try {
       NProgress.start()
       const formData = new FormData()
       formData.append('file', file)
+      if (body) {
+        for (let key in body) {
+          formData.append(`${key}`, body[`${key}`])
+        }
+      }
       const res = await axios.post(url, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })

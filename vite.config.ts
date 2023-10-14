@@ -49,10 +49,10 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 3000,
     proxy: {
-      '/nodeMock': {
-        target: 'http://localhost:8003/api', // 对mock进行代理，为了区别非mock的代理  --后台接口地址
+      '/api': {
+        target: 'http://localhost:8003/adminApi', // 对mock进行代理，为了区别非mock的代理  --后台接口地址
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/nodeMock/, '')   // axios 实例的 baseURL属性，与上面的mock对应
+        rewrite: (path) => path.replace(/^\/api/, '')   // axios 实例的 baseURL属性，与上面的mock对应
       },
     },
     open: true,  // 是否在浏览器打开

@@ -7,19 +7,19 @@ const userWareHouse = [
     token: "64000019741229721X",
     userName: 'admin',
     passWord: 123456,
-    jurisdiction: '00'
+    roles: '00'
   }, {
     token: "64901376127829721Y",
     userName: 'admin2',
     passWord: 111111,
-    jurisdiction: '01'
+    roles: '01'
   }]
 
 const RouteHouse = [
   {
     path: '/demo',
     component: "Layout",
-    meta: { title: 'demo', hidden: false, jurisdiction: ['00', '01'] },
+    meta: { title: 'demo', hidden: false, roles: ['00', '01'] },
     children: [
       {
         path: 'demo1',
@@ -38,7 +38,7 @@ const RouteHouse = [
   {
     path: '/menu',
     component: "Layout",
-    meta: { title: 'menu', hidden: false, jurisdiction: ['00'] },
+    meta: { title: 'menu', hidden: false, roles: ['00'] },
     children: [
       {
         path: 'menu1',
@@ -75,7 +75,7 @@ export default [
           res = resultSuccess({
             token: item.token,
             userName: item.userName,
-            jurisdiction: item.jurisdiction
+            roles: item.roles
           })
           isMatch = true
         }
@@ -92,10 +92,10 @@ export default [
     url: "/mock/RouteList",
     method: "post",
     response: (request: requestParams) => {
-      const { jurisdiction } = request.body
+      const { roles } = request.body
       let res: any[] = []
       RouteHouse.filter(item => {
-        if (item.meta.jurisdiction.includes(jurisdiction)) {
+        if (item.meta.roles.includes(roles)) {
           res.push(item)
         }
       })

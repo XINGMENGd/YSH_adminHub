@@ -2,18 +2,18 @@ import { createApp } from 'vue'
 import router from '@/router/index' // 绝对不要加.ts后缀
 import store from '@/stores/index'
 
-import LoginStore from '@/stores/login'
-import { FetchRoute } from '@/api/Authentication'
-import { setRoute } from '@/utils/route'
+import LoginStore from '@/stores/Auth'
+import { getRoute } from '@/api/Authentication'
+import { setRoute } from '@/utils/routes'
 
-import http from '@/api/http'
+import http from '@/utils/http'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import App from './App.vue'
 
 const app = createApp(App)
 
 router.beforeEach(async (to, from, next) => {
-  
+
   const useStore = LoginStore()
   const { token } = useStore.GET_userInfo
 
@@ -29,7 +29,7 @@ router.beforeEach(async (to, from, next) => {
       next()
     } else {
       // 将路由添加到 store 中，用来标记已添加动态路由
-      const { data } = await FetchRoute()
+      const { data } = await getRoute()
       setRoute(data)
       // 如果 addRoutes 并未完成，路由守卫会一层一层的执行执行，直到 addRoutes 完成，找到对应的路由
       next({ ...to, replace: true })
@@ -45,9 +45,7 @@ router.beforeEach(async (to, from, next) => {
 })
 
 // 定义全局方法
-app.config.globalProperties.$request = () => {
-  return http
-}
+app.config.globalProperties.$request = http
 
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
   app.component(key, component)

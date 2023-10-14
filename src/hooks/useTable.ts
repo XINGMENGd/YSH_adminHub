@@ -1,12 +1,12 @@
 import { ref, watch, onMounted } from "vue";
-import http from "@/api/http";
+import http from "@/utils/http";
 import type * as CT from '@/api/common/types'
 
 export function useTable(params: any) {
   const {
     url,
     initialPage = 1,
-    initialPageSize = 20,
+    initialPageSize = 10,
     initialSortDirection = '',
     initialSortBy = '',
   } = params
@@ -29,13 +29,18 @@ export function useTable(params: any) {
         sort: sortBy.value,
         direction: sortDirection.value,
       })
-      tableData.value = response.data
-      // total.value = response.data.total
+      tableData.value = response.data.list
+      total.value = response.data.total || 0
     } catch (error) {
       console.error(error)
     } finally {
       loading.value = false
     }
+  }
+
+  const sortChange = ({ column, prop, order }: any) => {
+    sortBy.value = prop
+    sortDirection.value = order == 'ascending' ? 'ASC' : order == 'descending' ? 'DESC' : ''
   }
 
   // 监听分页、排序参数的变化，重新获取数据
@@ -55,5 +60,6 @@ export function useTable(params: any) {
     sortBy,
     sortDirection,
     fetchData,
+    sortChange
   }
 }

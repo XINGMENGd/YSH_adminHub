@@ -1,13 +1,14 @@
 import { defineStore } from 'pinia'
 
-export default defineStore('LoginStore', {
+export default defineStore('AuthStore', {
   state: () => {
     return {
       userInfo: { // 用户信息
         id: 0,
         token: '',
         username: '',
-        avatar: ''
+        avatar: '',
+        roles: ''
       },
       isCollapse: false, // 是否展开侧边栏
       routers: [] // 路由列表
@@ -26,17 +27,18 @@ export default defineStore('LoginStore', {
       this.isCollapse = !this.isCollapse
     },
     SET_userInfo(data: any) {
-      const { id, token, username } = data
+      const { id, token, username, roles } = data
       this.userInfo.id = id
       this.userInfo.token = token
       this.userInfo.username = username
+      this.userInfo.roles = roles
     },
     SET_routers(routers: any) {
       this.routers = routers
     }
   },
   persist: {
-    key: 'loginState',
+    key: 'AuthStore',
     storage: sessionStorage, // 数据存储位置，默认为 localStorage
     paths: ['userInfo', 'isCollapse'] // 用于部分持久化状态的点表示法路径数组，表示不会持久化任何状态（默认为并保留整个状态）
   }

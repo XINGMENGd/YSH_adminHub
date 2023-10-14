@@ -8,7 +8,7 @@
         <el-header>
           <Header :isCollapse="isCollapse" @submit="updateIsCollapse"></Header>
         </el-header>
-        <el-main>
+        <el-main ref="main">
           <Main></Main>
         </el-main>
       </el-container>
@@ -17,16 +17,18 @@
 </template>
 
 <script lang="ts" setup>
-// import { useRouter, useRoute } from 'vue-router'
+import { useRouter, useRoute, onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
+import { ref, provide, nextTick } from 'vue'
 import Aside from './components/Aside/index.vue'
 import Header from './components/Header/index.vue'
 import Main from './components/Main/index.vue'
 
-import LoginStore from '@/stores/login'
+import LoginStore from '@/stores/Auth'
 import { storeToRefs } from 'pinia'
+import { useWindowResize } from '@/hooks/useWindowResize'
 
 const useStore = LoginStore()
-// const router = useRouter()
+const router = useRouter()
 
 // 解构数据，但是得到的数据是不具有响应式的，只是一次性的
 // 相当于仅仅只是...mainStore而已，只是做了reactive处理，并没有做toRefs,不是一直响应的
@@ -37,11 +39,18 @@ const useStore = LoginStore()
 // 解决方法：
 // 通过pinia中提供的storeToRefs方法来解决，推荐使用
 const { isCollapse } = storeToRefs(useStore)
-const updateIsCollapse = (): void => {
+function updateIsCollapse(): void {
   useStore.UPDATE_isCollapse()
 }
 
-// console.log(import.meta.env)
+const { main, onResize } = useWindowResize()
+// 路由切换后调用函数重新计算高度
+router.afterEach(() => {
+  nextTick(() => {
+    onResize()
+  })
+})
+
 </script>
 
 <style lang='less' scoped>

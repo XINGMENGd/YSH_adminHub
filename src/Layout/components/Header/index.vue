@@ -24,7 +24,7 @@
 import { ref } from 'vue'
 // import { useRouter, useRoute } from 'vue-router'
 // import { storeToRefs } from 'pinia';
-import LoginStore from '@/stores/login'
+import LoginStore from '@/stores/Auth'
 import { UserFilled } from '@element-plus/icons-vue'
 
 defineProps<{ isCollapse: boolean }>()

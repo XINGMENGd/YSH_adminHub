@@ -1,5 +1,5 @@
 <template>
-  <el-drawer v-model="drawer" title="商品详情">
+  <el-drawer v-model="drawer" title="商品详情" class="common-drawer" @closed="handlerCloseDrawer">
     <div class="detailItem">
       <label for="Name" class="itemLabel">商品名称:</label>
       <span>{{ productInfo.name }}</span>
@@ -18,26 +18,33 @@
     </div>
     <div class="detailItem">
       <label for="Category" class="itemLabel">商品分类:</label>
-      <span>{{ categoryList[productInfo.category - 1]?.label || '暂无数据' }}</span>
+      <span>{{ productCategoryList[productInfo.category]?.label || '暂无数据' }}</span>
     </div>
     <div class="detailItem">
       <label for="Status" class="itemLabel">商品状态:</label>
-      <span>{{ statusList[productInfo.status - 1]?.label || '暂无数据' }}</span>
+      <span>{{ productStatusList[productInfo.status]?.label || '暂无数据' }}</span>
     </div>
     <div class="detailItem">
       <label for="ImageArray" class="itemLabel">商品图:</label>
       <div class="ItemImagesBox">
-        <el-image class="ItemImages" v-for="(item, index) in productInfo.imageArray" :src="item"
-          :preview-src-list="productInfo.imageArray" :initial-index="index" fit="cover" hide-on-click-modal />
+        <el-image class="ItemImages" v-for="(item, index) in productInfo.imageFiles" :src="item.name"
+          :preview-src-list="previewList" :initial-index="index" fit="scale-down" hide-on-click-modal />
+      </div>
+    </div>
+    <div class="detailItem" v-if="productInfo.videoFiles.length > 0">
+      <label for="ImageArray" class="itemLabel">商品视频:</label>
+      <div class="productVideoBox">
+        <video class="productVideo" ref="videoRef" :src="productInfo.videoFiles[0]?.name" controls
+          @pause="videoPause"></video>
       </div>
     </div>
   </el-drawer>
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 
-const { categoryList, statusList } = defineProps<{ categoryList: any, statusList: any }>()
+const { productCategoryList, productStatusList } = defineProps<{ productCategoryList: any, productStatusList: any }>()
 const drawer = ref(false)
 const productInfo = ref({
   name: "",
@@ -45,16 +52,33 @@ const productInfo = ref({
   price: 1,
   stock: 1, // 商品库存
   category: 0, // 商品分类
-  imageArray: [] as any[],
+  imageFiles: [] as any[],
+  videoFiles: [] as any[],
   status: 0,
-  sellerId: 0,
+  seller_id: 0,
   created_at: ''
 })
-const showDrawer = (row: any) => {
+const previewList = computed(() => {
+  return productInfo.value.imageFiles.map(item => {
+    return item.name
+  })
+})
+const videoRef = ref() // 视频播放容器实例
+function showDrawer(row: any) {
   productInfo.value = row
   drawer.value = true
 }
+function handlerCloseDrawer() {
+  try {
+    videoRef.value.pause()
+  } catch (error) {
+    console.log(error);
+  }
+}
 
+function videoPause() {
+  console.log('videoPause');
+}
 defineExpose({ showDrawer })
 </script>
 
@@ -74,5 +98,17 @@ defineExpose({ showDrawer })
       margin-top: 6px;
     }
   }
+
+  .productVideoBox {
+    width: 100%;
+    height: 30%;
+
+    .productVideo {
+      width: 100%;
+      height: 100%;
+    }
+  }
+
+
 }
 </style>
