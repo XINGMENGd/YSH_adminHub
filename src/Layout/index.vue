@@ -17,8 +17,8 @@
 </template>
 
 <script lang="ts" setup>
-import { useRouter, useRoute, onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
-import { ref, provide, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
+import { nextTick } from 'vue'
 import Aside from './components/Aside/index.vue'
 import Header from './components/Header/index.vue'
 import Main from './components/Main/index.vue'
@@ -45,8 +45,8 @@ function updateIsCollapse(): void {
 
 const { main, onResize } = useWindowResize()
 // 路由切换后调用函数重新计算高度
-router.afterEach(() => {
-  nextTick(() => {
+router.afterEach(async () => {
+  await nextTick(() => {
     onResize()
   })
 })

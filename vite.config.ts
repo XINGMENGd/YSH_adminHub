@@ -5,7 +5,6 @@ import { viteMockServe } from 'vite-plugin-mock'
 import Components from 'unplugin-vue-components/vite'
 import AutoImport from 'unplugin-auto-import/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
-import eslintPlugin from 'vite-plugin-eslint'
 
 function _resolve(dir: string) {
   return resolve(__dirname, dir)
@@ -14,9 +13,6 @@ function _resolve(dir: string) {
 export default defineConfig({
   plugins: [
     vue(),
-    // eslintPlugin({
-    //   include: ['src/**/*.ts', 'src/**/*.vue', 'src/*.ts', 'src/*.vue'],
-    // }),
     viteMockServe({
       mockPath: '/src/mock',  // 设置mock.ts 文件的存储文件夹  
       supportTs: true,
@@ -57,17 +53,5 @@ export default defineConfig({
     },
     open: true,  // 是否在浏览器打开
     https: false,
-  },
-  // build: {
-  //   // 集成 ESLint 到构建过程中
-  //   rollupOptions: {
-  //     plugins: [eslintPlugin({ include: ['./src/**/*.ts', './src/**/*.vue'] })]
-  //   },
-  //   terserOptions: {
-  //     compress: {
-  //       drop_console: true,
-  //       drop_debugger: true
-  //     }
-  //   }
-  // },
+  }
 })

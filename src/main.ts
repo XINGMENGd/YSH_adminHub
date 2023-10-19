@@ -12,11 +12,9 @@ import App from './App.vue'
 
 const app = createApp(App)
 
-router.beforeEach(async (to, from, next) => {
-
+router.beforeEach(async(to, from, next) => {
   const useStore = LoginStore()
   const { token } = useStore.GET_userInfo
-
   if (token !== '') {
     // 登录过就不能访问登录界面，需要中断这一次路由守卫，执行下一次路由守卫，并且下一次守卫的to是主页'
     if (to.path === '/login') {
