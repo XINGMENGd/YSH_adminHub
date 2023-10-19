@@ -43,7 +43,7 @@ export default defineConfig({
   },
   server: {
     host: '0.0.0.0',
-    port: 3000,
+    port: 4000,
     proxy: {
       '/api': {
         target: 'http://localhost:8003/adminApi', // 对mock进行代理，为了区别非mock的代理  --后台接口地址
