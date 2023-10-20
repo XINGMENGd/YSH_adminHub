@@ -1,0 +1,1 @@
+import{_ as e,o as t,c as s,a3 as c}from"./index-e11f1ef4.js";const o={},n=c("div",{class:"test"}," 我是vue3.2+vite2+vue-router4 ",-1),r=[n];function a(_,d){return t(),s("div",null,r)}const l=e(o,[["render",a]]);export{l as default};
