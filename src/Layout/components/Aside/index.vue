@@ -1,5 +1,5 @@
 <template>
-  <div>logo</div>
+  <div>芸尚惠logo</div>
   <el-menu class="el-menu-vertical-demo" :collapse="isCollapse" :unique-opened="true">
     <subMenu :routeMenu="routeMenu" />
   </el-menu>

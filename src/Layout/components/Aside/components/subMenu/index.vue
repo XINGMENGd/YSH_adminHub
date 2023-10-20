@@ -24,6 +24,7 @@
 
 <script lang='ts' setup>
 import router from '@/router/index'
+import subMenu from './index.vue'
 
 const { routeMenu } = defineProps<{ routeMenu: any }>()
 const skipRouter = async (item: any): Promise<void> => {
@@ -33,44 +34,5 @@ const skipRouter = async (item: any): Promise<void> => {
 }
 
 </script>
-<script lang="ts">
-export default { name: 'subMenu' }
-</script>
 
 <style lang='less' scoped></style>
-
-<!-- <template>
-  <el-sub-menu v-for="(item, index) in routeMenu" :index="item.path">
-    <template #title>
-      <el-icon size="20">
-        <component :is="item.meta.icon"></component>
-      </el-icon>
-      <span>{{ item.meta.title }}</span>
-    </template>
-    <el-menu-item v-if="!item.children" :index="item.path" @click="skipRouter(item)">
-      {{ item.meta.title }}
-    </el-menu-item>
-    <subMenu v-else :routeMenu="item.children" />
-  </el-sub-menu>
-</template>
-
-<script lang="ts">
-export default {
-  name: "subMenu"
-}
-</script>
-<script lang='ts' setup>
-import { ref, reactive, toRefs, onBeforeMount, onMounted } from 'vue'
-import router from '@/router/index'
-
-const { routeMenu } = defineProps<{ routeMenu: any }>()
-
-const skipRouter = (item: any) => {
-  const reg = /\/src\/views\/(.+)\/index\.vue/
-  const toPath = '/' + item.component.toString().match(reg)[1]
-  router.push(toPath)
-}
-
-</script>
-
-<style lang='less' scoped></style> -->
