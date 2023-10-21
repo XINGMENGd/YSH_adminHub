@@ -3,6 +3,9 @@ import http from "@/utils/http";
 
 export function useProductCategory(params: any = {}) {
   // 获取商品分类列表
+  const {
+    url,
+  } = params
   const productCategoryList = ref([] as any)
   const showProductCategoryList = ref([] as any)
   const loading = ref(false) // 是否正在加载数据
@@ -11,12 +14,11 @@ export function useProductCategory(params: any = {}) {
   const fetchData = async () => {
     try {
       loading.value = true
-      const response: any = await http.get('/getProductCategoryList')
+      const response: any = await http.get(url)
       for (const item of response.data) {
         showProductCategoryList.value[item.value] = item
       }
       productCategoryList.value = response.data
-
     } catch (error) {
       console.error(error)
     } finally {

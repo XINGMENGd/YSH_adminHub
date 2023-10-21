@@ -1,20 +1,19 @@
 <template>
-  <div>芸尚惠logo</div>
+  <div @click='handleClickLogo'>芸尚惠logo</div>
   <el-menu class="el-menu-vertical-demo" :collapse="isCollapse" :unique-opened="true">
     <subMenu :routeMenu="routeMenu" />
   </el-menu>
 </template>
 
 <script lang="ts" setup>
-// import { ref, reactive, toRefs, onBeforeMount, onMounted } from 'vue'
-// import { storeToRefs } from 'pinia';
+import { router } from '@/router/index'
 import LoginStore from '@/stores/Auth'
 import subMenu from './components/subMenu/index.vue'
 
-// 声明个变量统一接受传值
 defineProps<{ isCollapse: boolean }>()
 const useStore = LoginStore()
 const routeMenu = useStore.GET_routers
+function handleClickLogo() { router.push('/') }
 
 </script>
 

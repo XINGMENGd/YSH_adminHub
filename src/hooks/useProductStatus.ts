@@ -3,6 +3,9 @@ import http from "@/utils/http";
 
 export function useProductStatus(params: any = {}) {
   // 获取商品状态列表
+  const {
+    url,
+  } = params
   const productStatusList = ref([] as any)
   const showProductStatusList = ref([] as any)
   const loading = ref(false) // 是否正在加载数据
@@ -11,7 +14,7 @@ export function useProductStatus(params: any = {}) {
   const fetchData = async () => {
     try {
       loading.value = true
-      const response: any = await http.get('/getProductStatusList')
+      const response: any = await http.get(url)
       for (const item of response.data) {
         showProductStatusList.value[item.value] = item
       }

@@ -52,8 +52,8 @@ import { useProductStatus } from '@/hooks/useProductStatus'
 
 // 获取表格数据及商品状态列表
 const { tableData, currentPage, pageSize, total, fetchData, sortChange } = useTable({ url: '/getProductList' })
-const { productCategoryList, showProductCategoryList } = useProductCategory()
-const { productStatusList, showProductStatusList } = useProductStatus()
+const { productCategoryList, showProductCategoryList } = useProductCategory({ url: '/getProductCategoryList' })
+const { productStatusList, showProductStatusList } = useProductStatus({ url: '/getProductStatusList' })
 
 // 继承实例
 const search = inject('search')

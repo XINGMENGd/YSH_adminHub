@@ -113,7 +113,7 @@ function reset() {
   }
 }
 // 关闭对话框
-async function closeDialog(done: () => void) {
+async function closeDialog(done: () => any): Promise<void> {
   // 存在已上传文件，发送请求删除
   const deleteFiles = formData.value.imageFiles.concat(formData.value.videoFiles)
   if (deleteFiles.length > 0) {

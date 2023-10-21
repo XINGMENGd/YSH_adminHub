@@ -66,8 +66,6 @@ const previewFile = ref('') // 预览文件信息
 const reg = /\/uploads\/(images|videos)\/(.+)/
 const oldImageFiles = ref<string[]>([]); // 存储原始旧图片列表信息
 const oldVideoFiles = ref<string[]>([]); // 存储原始旧视频列表信息
-const uploadedImages = ref([] as any) // 存储当前上传的图片列表信息
-const uploadedVideos = ref([] as any) // 存储当前上传的视频列表信息
 const formData = ref({
   description: "", // 商品描述
   price: 1,

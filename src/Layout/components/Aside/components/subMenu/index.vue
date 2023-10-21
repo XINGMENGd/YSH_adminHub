@@ -23,7 +23,7 @@
 </template>
 
 <script lang='ts' setup>
-import router from '@/router/index'
+import { router } from '@/router/index'
 import subMenu from './index.vue'
 
 const { routeMenu } = defineProps<{ routeMenu: any }>()

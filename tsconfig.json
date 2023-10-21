@@ -30,7 +30,7 @@
     "src/**/*.d.ts",
     "src/**/*.tsx",
     "src/**/*.vue",
-    "src/utils/route",
+    "auto-imports.d.ts"
   ],
   "references": [
     {

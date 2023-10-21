@@ -1,4 +1,5 @@
 import SparkMD5 from 'spark-md5';
+import { Component } from 'vue';
 /**
  * 数组去重
  * @param arr1 基础数组(以这个数组为基础来对比)
@@ -71,3 +72,5 @@ export const hashFile = (file: File) => {
     loadNext()
   })
 }
+
+

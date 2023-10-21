@@ -3,15 +3,9 @@
 </template>
 
 <script lang="ts" setup>
-import http from '@/utils/http'
-
-// import { defineComponent, ref, getCurrentInstance } from 'vue'
-// 接收全局方法
-// let instance: any = getCurrentInstance()
-// const http = instance.proxy.$request
-// console.log(http);
-// 使用
-// http.post('/sendVerifyCode', { number: '379890959@qq.com', send_mode: 'email' }).then((res: any) => {
+// import useCurrentInstance from '@/hooks/useCurrentInstance'
+// const { globalProperties } = useCurrentInstance()
+// globalProperties.$request.get('/getProductList').then(res => {
 //   console.log(res);
 // })
 
