@@ -1,0 +1,1 @@
+import{d as n,E as s,o as a,c,a as e,b as l,w as r,F as _}from"./index-553dae25.js";const d=n({__name:"index",setup(u){console.log(123);const o=()=>{console.log(123)};return(m,p)=>{const t=s;return a(),c(_,null,[e(" 登录 "),l(t,{type:"success",onClick:o},{default:r(()=>[e("按钮")]),_:1})],64)}}});export{d as default};
