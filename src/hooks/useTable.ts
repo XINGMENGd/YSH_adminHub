@@ -23,11 +23,14 @@ export function useTable(params: any) {
   const fetchData = async () => {
     try {
       loading.value = true
-      const response: any = await defHttp.get(url, {
-        page: currentPage.value,
-        size: pageSize.value,
-        sort: sortBy.value,
-        direction: sortDirection.value,
+      const response: any = await defHttp.get({
+        url,
+        params: {
+          page: currentPage.value,
+          size: pageSize.value,
+          sort: sortBy.value,
+          direction: sortDirection.value,
+        }
       })
       tableData.value = response.data.list
       total.value = response.data.total || 0

@@ -160,9 +160,13 @@ async function uploadImageFile(UploadFile: UploadRequestOptions) {
   // 未超过设定上传上限，直接上传
   if (fileSize <= maxChunkFileSize) {
     const hash = await hashFile(file)
-    defHttp.upload('/uploadFile', file, {
-      'name': hash + '.' + extension,
-      'type': file.type
+    const uploadFormData = new FormData()
+    uploadFormData.append('file', file)
+    uploadFormData.append('name', hash + '.' + extension)
+    uploadFormData.append('type', file.type)
+    defHttp.upload({
+      url: '/uploadFile',
+      data: uploadFormData
     })
     const uploadFile = {
       originalName: file.name,
@@ -176,24 +180,31 @@ async function uploadImageFile(UploadFile: UploadRequestOptions) {
     const chunks = Math.ceil(fileSize / maxChunkFileSize); // 获取切片的个数
     const blobSlice = File.prototype.slice // 切片方法
     const hash = await hashFile(file).catch(err => { console.error(err); }) // 获取图片hash
-    for (let i = 0; i < chunks; i++) {
-      const start = i * maxChunkFileSize
+    for (let index = 0; index < chunks; index++) {
+      const start = index * maxChunkFileSize
       const end = Math.min(file.size, start + maxChunkFileSize)
+      const uploadFormData = new FormData()
+      uploadFormData.append('file', blobSlice.call(file, start, end))
+      uploadFormData.append('hash', hash)
+      uploadFormData.append('index', index as any)
+      uploadFormData.append('type', file.type)
       uploadPromiseArray.push(
-        defHttp.upload('/uploadChunks', blobSlice.call(file, start, end), {
-          'hash': hash,
-          'index': i,
-          'type': file.type
+        defHttp.upload({
+          url: '/uploadChunks',
+          data: uploadFormData
         })
       )
     }
     // 等待所有分片上传完毕发送合并分片请求
     Promise.all(uploadPromiseArray).then(res => {
-      defHttp.post('/mergeChunks', {
-        'name': hash + '.' + extension,
-        'hash': hash,
-        'total': chunks,
-        'type': file.type
+      defHttp.post({
+        url: '/mergeChunks',
+        data: {
+          'name': hash + '.' + extension,
+          'hash': hash,
+          'total': chunks,
+          'type': file.type
+        }
       })
       const uploadFile = {
         originalName: file.name,
@@ -212,9 +223,13 @@ async function uploadVideoFile(UploadFile: File) {
   // 未超过最大分片上传上限，直接上传
   if (fileSize <= maxChunkFileSize) {
     const hash = await hashFile(UploadFile)
-    defHttp.upload('/uploadFile', UploadFile, {
-      'name': hash + '.' + extension,
-      'type': UploadFile.type
+    const uploadFormData = new FormData()
+    uploadFormData.append('file', UploadFile)
+    uploadFormData.append('name', hash)
+    uploadFormData.append('type', UploadFile.type)
+    defHttp.upload({
+      url: '/uploadFile',
+      data: uploadFormData
     })
     const uploadFile = {
       originalName: UploadFile.name,
@@ -228,24 +243,31 @@ async function uploadVideoFile(UploadFile: File) {
     const chunks = Math.ceil(fileSize / maxChunkFileSize); // 获取切片的个数
     const blobSlice = File.prototype.slice // 切片方法
     const hash = await hashFile(UploadFile).catch(err => { console.error(err); }) // 获取图片hash
-    for (let i = 0; i < chunks; i++) {
-      const start = i * maxChunkFileSize
+    for (let index = 0; index < chunks; index++) {
+      const start = index * maxChunkFileSize
       const end = Math.min(UploadFile.size, start + maxChunkFileSize)
+      const uploadFormData = new FormData()
+      uploadFormData.append('file', blobSlice.call(UploadFile, start, end))
+      uploadFormData.append('hash', hash)
+      uploadFormData.append('index', index as any)
+      uploadFormData.append('type', UploadFile.type)
       uploadPromiseArray.push(
-        defHttp.upload('/uploadChunks', blobSlice.call(UploadFile, start, end), {
-          'hash': hash,
-          'index': i,
-          'type': UploadFile.type
+        defHttp.upload({
+          url: '/uploadChunks',
+          data: uploadFormData
         })
       )
     }
     // 等待所有分片上传完毕发送合并分片请求
     Promise.all(uploadPromiseArray).then(res => {
-      defHttp.post('/mergeChunks', {
-        'name': hash + '.' + extension,
-        'hash': hash,
-        'total': chunks,
-        'type': UploadFile.type
+      defHttp.post({
+        url: '/mergeChunks',
+        data: {
+          'name': hash + '.' + extension,
+          'hash': hash,
+          'total': chunks,
+          'type': UploadFile.type
+        }
       })
       const uploadFile = {
         originalName: UploadFile.name,

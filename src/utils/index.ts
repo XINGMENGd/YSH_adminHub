@@ -31,7 +31,7 @@ export const getCookie = (key: string) => {
  * @param file 需要加密的图片
  * @returns 
  */
-export const hashFile = (file: File) => {
+export const hashFile = (file: File): Promise<any> => {
   return new Promise((resolve, reject) => {
     const maxFileSize = 5 * 1024 * 1024 // 最大上传文件大小
     const fileSize = file.size // 文件大小

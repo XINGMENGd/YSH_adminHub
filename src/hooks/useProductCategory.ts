@@ -14,7 +14,7 @@ export function useProductCategory(params: any = {}) {
   const fetchData = async () => {
     try {
       loading.value = true
-      const response: any = await defHttp.get(url)
+      const response: any = await defHttp.get({ url })
       for (const item of response.data) {
         showProductCategoryList.value[item.value] = item
       }

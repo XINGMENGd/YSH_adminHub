@@ -1,32 +1,20 @@
 import axios from 'axios'
 import NProgress from 'nprogress'
-import LoginStore from '@/stores/Auth'
-import responseInterceptors from './responseInterceptors'
-import errorInterceptors from './errorInterceptors'
+import * as axiosTransform from './axiosTransform'
 
 // 设置请求头和请求路径
 axios.defaults.baseURL = import.meta.env.VITE_BASE_API_URL
 axios.defaults.timeout = 1000 * 20
 axios.defaults.headers.post['Content-Type'] = 'application/json;charset=UTF-8'
+// 请求拦截
 axios.interceptors.request.use(
-  (config) => {
-    const useStore = LoginStore()
-    const { id, token } = useStore.GET_userInfo
-
-    if (token !== '') {
-      config.headers['User-Identifier'] = id
-      config.headers.Authorization = token
-    }
-    return config
-  },
-  (error) => {
-    return error
-  }
+  (config) => axiosTransform.requestInterceptors(config),
+  (error) => axiosTransform.requestInterceptorsCatch(error)
 )
 // 响应拦截
 axios.interceptors.response.use(
-  response => responseInterceptors(response),
-  error => errorInterceptors(error)
+  response => axiosTransform.responseInterceptors(response),
+  error => axiosTransform.responseInterceptorsCatch(error)
 );
 
 interface ResType {
@@ -35,55 +23,38 @@ interface ResType {
   message?: string
   err?: string
 }
-interface Http {
-  get(url: string, params?: unknown): Promise<ResType>
-  post(url: string, params?: unknown): Promise<ResType>
-  upload(url: string, file: unknown, body: unknown): Promise<ResType>
-  download(url: string): void
+// interface Http {
+//   get(url: string, params?: unknown): Promise<ResType>
+//   post(url: string, body?: unknown): Promise<ResType>
+//   upload(url: string, file: unknown, body: unknown): Promise<ResType>
+//   download(url: string): void
+// }
+
+function request(requestOptions: any, AxiosRequestConfig: any = {}) {
+  return new Promise(async (resolve, reject) => {
+    NProgress.start()
+    try {
+      const { data } = await axios({ ...requestOptions })
+      resolve(data)
+    } catch (error) {
+      reject(error)
+    }
+    NProgress.done()
+  })
 }
 
-const defHttp: Http = {
-  get: async (url: string, params: any) => {
-    try {
-      NProgress.start()
-      const res = await axios.get(url, { params })
-      NProgress.done()
-      return res.data
-    } catch (err: any) {
-      NProgress.done()
-      throw err.response?.data || err?.data
-    }
+const defHttp: any = {
+  get: async (options: any, config: any) => {
+    const response = await request({ ...options, method: 'GET' }) as any
+    return response
   },
-  post: async (url: string, params: any) => {
-    try {
-      NProgress.start()
-      const res = await axios.post(url, JSON.stringify(params))
-      NProgress.done()
-      return res.data
-    } catch (err: any) {
-      NProgress.done()
-      throw err.response?.data || err?.data
-    }
+  post: async (options: any, config: any) => {
+    const response = await request({ ...options, method: 'POST' }) as any
+    return response
   },
-  upload: async (url: string, file: File, body: any) => {
-    try {
-      NProgress.start()
-      const formData = new FormData()
-      formData.append('file', file)
-      if (body) {
-        for (let key in body) {
-          formData.append(`${key}`, body[`${key}`])
-        }
-      }
-      const res = await axios.post(url, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      })
-      NProgress.done()
-      return res.data
-    } catch (err: any) {
-      NProgress.done()
-      throw err.response?.data || err?.data
-    }
+  upload: async (options: any, config: any) => {
+    const response = await request({ ...options, method: 'POST', headers: { 'Content-Type': 'multipart/form-data' } }) as any
+    return response
   },
   download: (url: string) => {
     const link = document.createElement('a')
@@ -95,4 +66,5 @@ const defHttp: Http = {
     document.body.removeChild(link)
   }
 }
+
 export default defHttp

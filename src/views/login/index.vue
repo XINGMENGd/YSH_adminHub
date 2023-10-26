@@ -34,12 +34,12 @@ const FormData = reactive({
 
 const rules = reactive({
   username: [
-    { required: true, message: 'Please input Username', trigger: 'blur' },
-    { min: 3, max: 15, message: 'Length should be 6 to 15', trigger: 'blur' }
+    // { required: true, message: 'Please input Username', trigger: 'blur' },
+    // { min: 3, max: 15, message: 'Length should be 6 to 15', trigger: 'blur' }
   ],
   password: [
-    { required: true, message: 'Please input PassWord', trigger: 'blur' },
-    { min: 6, max: 15, message: 'Length should be 6 to 15', trigger: 'blur' }
+    // { required: true, message: 'Please input PassWord', trigger: 'blur' },
+    // { min: 6, max: 15, message: 'Length should be 6 to 15', trigger: 'blur' }
   ]
 })
 
