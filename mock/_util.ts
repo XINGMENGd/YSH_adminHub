@@ -1,6 +1,3 @@
-// mock/_util.ts
-// Interface data format used to return a unified format
-
 import { Recordable } from 'vite-plugin-mock'
 
 export function resultSuccess<T = Recordable>(data: T, { message = 'success' } = {}) {

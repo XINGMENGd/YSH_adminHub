@@ -19,13 +19,17 @@ export default defineConfig({
       // prodEnabled: true, // 设置生产环境是否启用 mock 功能
       // watchFiles: true, // 设置是否监视mockPath对应的文件夹内文件中的更改
     }),
-    // ElementPlus组件按需自动引入
+    // 组件按需自动引入
     AutoImport({
-      resolvers: [ElementPlusResolver()]
+      resolvers: [
+        ElementPlusResolver(),
+      ]
     }),
     Components({
-      resolvers: [ElementPlusResolver()]
-    }),
+      resolvers: [
+        ElementPlusResolver(),
+      ]
+    })
   ],
   resolve: {
     alias: {

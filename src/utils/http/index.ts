@@ -1,6 +1,8 @@
 import axios from 'axios'
 import NProgress from 'nprogress'
 import LoginStore from '@/stores/Auth'
+import responseInterceptors from './responseInterceptors'
+import errorInterceptors from './errorInterceptors'
 
 // 设置请求头和请求路径
 axios.defaults.baseURL = import.meta.env.VITE_BASE_API_URL
@@ -21,51 +23,26 @@ axios.interceptors.request.use(
     return error
   }
 )
-
 // 响应拦截
-axios.interceptors.response.use((res: any) => {
-  return new Promise((resolve, reject) => {
-    if (res.data.code === 200) {
-      if (res.data.message !== '获取成功' && res.data.message !== '删除成功' && res.data.message !== '分片上传成功') {
-        ElMessage({
-          message: res.data.message,
-          type: 'success',
-          duration: 1000
-        })
-      }
-      return resolve(res)
-    } else {
-      if (res.data.code === 401) {
-        const useStore = LoginStore()
-        useStore.LOGOUT()
-        return
-      }
-      if (res.data.message !== '图片不存在') {
-        ElMessage.error({
-          message: res.data.message,
-          type: 'success',
-          duration: 1000
-        })
-      }
-      return reject(res)
-    }
-  })
-})
+axios.interceptors.response.use(
+  response => responseInterceptors(response),
+  error => errorInterceptors(error)
+);
 
-interface ResType<T> {
+interface ResType {
   code: number
-  data?: T
+  data?: any
   message?: string
   err?: string
 }
 interface Http {
-  get<T>(url: string, params?: unknown): Promise<ResType<T>>
-  post<T>(url: string, params?: unknown): Promise<ResType<T>>
-  upload<T>(url: string, file: unknown, body: unknown): Promise<ResType<T>>
+  get(url: string, params?: unknown): Promise<ResType>
+  post(url: string, params?: unknown): Promise<ResType>
+  upload(url: string, file: unknown, body: unknown): Promise<ResType>
   download(url: string): void
 }
 
-const http: Http = {
+const defHttp: Http = {
   get: async (url: string, params: any) => {
     try {
       NProgress.start()
@@ -118,4 +95,4 @@ const http: Http = {
     document.body.removeChild(link)
   }
 }
-export default http
+export default defHttp

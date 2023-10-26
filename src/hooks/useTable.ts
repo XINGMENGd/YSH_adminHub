@@ -1,5 +1,5 @@
 import { ref, watch, onMounted } from "vue";
-import http from "@/utils/http";
+import defHttp from "@/utils/http";
 import type * as CT from '@/api/common/types'
 
 export function useTable(params: any) {
@@ -23,7 +23,7 @@ export function useTable(params: any) {
   const fetchData = async () => {
     try {
       loading.value = true
-      const response: any = await http.get(url, {
+      const response: any = await defHttp.get(url, {
         page: currentPage.value,
         size: pageSize.value,
         sort: sortBy.value,

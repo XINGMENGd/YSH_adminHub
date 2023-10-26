@@ -1,5 +1,5 @@
 import { ref, watch, onMounted } from "vue";
-import http from "@/utils/http";
+import defHttp from "@/utils/http";
 
 export function useProductStatus(params: any = {}) {
   // 获取商品状态列表
@@ -14,7 +14,7 @@ export function useProductStatus(params: any = {}) {
   const fetchData = async () => {
     try {
       loading.value = true
-      const response: any = await http.get(url)
+      const response: any = await defHttp.get(url)
       for (const item of response.data) {
         showProductStatusList.value[item.value] = item
       }

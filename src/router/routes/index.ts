@@ -1,6 +1,7 @@
 import Layout from '@/Layout/index.vue'
 import type { RouteRecordRaw } from 'vue-router'
 
+// 基础路由
 const routes: RouteRecordRaw[] = [
   {
     name: 'login',

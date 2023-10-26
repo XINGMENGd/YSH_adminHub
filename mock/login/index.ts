@@ -1,5 +1,4 @@
-import { resultError, resultSuccess, getRequestToken, requestParams } from '@/mock/_util'
-import { Random } from 'mockjs'
+import { resultError, resultSuccess, getRequestToken, requestParams } from '../_util'
 
 const userWareHouse = [
   {

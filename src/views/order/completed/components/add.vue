@@ -51,8 +51,8 @@ import { type FormInstance, UploadRawFile, UploadFile, UploadRequestOptions } fr
 import LoginStore from '@/stores/Auth'
 import { createProduct } from '@/api/Product/index'
 import { removeFiles } from '@/api/common/index'
-import { hashFile } from '@/utils/util'
-import http from '@/utils/http'
+import { hashFile } from '@/utils/index'
+import defHttp from '@/utils/http'
 import uploadVideo from '@/components/uploadVideo.vue'
 
 const emit = defineEmits(['getProductList'])
@@ -160,7 +160,7 @@ async function uploadImageFile(UploadFile: UploadRequestOptions) {
   // 未超过设定上传上限，直接上传
   if (fileSize <= maxChunkFileSize) {
     const hash = await hashFile(file)
-    http.upload('/uploadFile', file, {
+    defHttp.upload('/uploadFile', file, {
       'name': hash + '.' + extension,
       'type': file.type
     })
@@ -180,7 +180,7 @@ async function uploadImageFile(UploadFile: UploadRequestOptions) {
       const start = i * maxChunkFileSize
       const end = Math.min(file.size, start + maxChunkFileSize)
       uploadPromiseArray.push(
-        http.upload('/uploadChunks', blobSlice.call(file, start, end), {
+        defHttp.upload('/uploadChunks', blobSlice.call(file, start, end), {
           'hash': hash,
           'index': i,
           'type': file.type
@@ -189,7 +189,7 @@ async function uploadImageFile(UploadFile: UploadRequestOptions) {
     }
     // 等待所有分片上传完毕发送合并分片请求
     Promise.all(uploadPromiseArray).then(res => {
-      http.post('/mergeChunks', {
+      defHttp.post('/mergeChunks', {
         'name': hash + '.' + extension,
         'hash': hash,
         'total': chunks,
@@ -212,7 +212,7 @@ async function uploadVideoFile(UploadFile: File) {
   // 未超过最大分片上传上限，直接上传
   if (fileSize <= maxChunkFileSize) {
     const hash = await hashFile(UploadFile)
-    http.upload('/uploadFile', UploadFile, {
+    defHttp.upload('/uploadFile', UploadFile, {
       'name': hash + '.' + extension,
       'type': UploadFile.type
     })
@@ -232,7 +232,7 @@ async function uploadVideoFile(UploadFile: File) {
       const start = i * maxChunkFileSize
       const end = Math.min(UploadFile.size, start + maxChunkFileSize)
       uploadPromiseArray.push(
-        http.upload('/uploadChunks', blobSlice.call(UploadFile, start, end), {
+        defHttp.upload('/uploadChunks', blobSlice.call(UploadFile, start, end), {
           'hash': hash,
           'index': i,
           'type': UploadFile.type
@@ -241,7 +241,7 @@ async function uploadVideoFile(UploadFile: File) {
     }
     // 等待所有分片上传完毕发送合并分片请求
     Promise.all(uploadPromiseArray).then(res => {
-      http.post('/mergeChunks', {
+      defHttp.post('/mergeChunks', {
         'name': hash + '.' + extension,
         'hash': hash,
         'total': chunks,
