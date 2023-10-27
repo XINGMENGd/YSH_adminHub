@@ -65,7 +65,7 @@ function mapVideoUrl(file: any) {
 
 </script>
 
-<style lang="less" scoped>
+<style lang="scss" scoped>
 .hideInput {
   width: 0;
   height: 0;

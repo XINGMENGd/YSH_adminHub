@@ -82,7 +82,7 @@ function videoPause() {
 defineExpose({ showDrawer })
 </script>
 
-<style lang="less" scoped>
+<style lang="scss" scoped>
 .detailItem {
   margin-bottom: 20px;
 

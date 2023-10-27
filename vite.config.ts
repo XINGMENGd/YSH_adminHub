@@ -38,8 +38,8 @@ export default defineConfig({
   },
   css: {
     preprocessorOptions: {
-      less: {
-        additionalData: '@import "@/assets/style/main.less";'  // 配置全局less变量
+      scss: {
+        additionalData: '@import "@/assets/style/main.scss";'  // 配置全局scss变量
       }
     }
   },

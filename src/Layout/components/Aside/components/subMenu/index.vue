@@ -35,4 +35,4 @@ const skipRouter = async (item: any): Promise<void> => {
 
 </script>
 
-<style lang='less' scoped></style>
+<style lang='scss' scoped></style>

@@ -81,7 +81,7 @@ function handleDetail(row: any) { productDetailDrawer.value.showDrawer(row) }
 
 </script>
 
-<style lang='less' scoped>
+<style lang='scss' scoped>
 :deep(.el-popper) {
   width: 30% !important;
   max-height: 60% !important;

@@ -52,7 +52,7 @@ router.afterEach(async () => {
 
 </script>
 
-<style lang='less' scoped>
+<style lang='scss' scoped>
 .common-layout {
   height: 100%;
 }
